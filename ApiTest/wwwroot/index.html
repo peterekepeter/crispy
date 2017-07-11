@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>TestPage</title>
+    <script>
+        (function () {
+            function http (method, url, data, formatter) {
+                // create a promise
+                return new Promise(function (resolve, reject) {
+                    var request = new XMLHttpRequest();
+                    request.open(method, url, true);
+                    request.setRequestHeader('Accept', 'application/json');
+                    request.setRequestHeader('X-Request-From', 'apicall');
+                    var body = null;
+                    if (!(method === "GET" || method === "DELETE")) {
+                        if (typeof data === 'object') {
+                            request.setRequestHeader('Content-Type', 'application/json');
+                            body = JSON.stringify(data);
+                        } else {
+                            request.setRequestHeader('Content-Type', 'application/json');
+                            body = "'" + data.replace(/'/g, '\\\'') + "'";
+                        }
+                    }
+                    request.onload = function () {
+                        var data = null;
+                        if (request.status >= 200 && request.status < 400) {
+                            if (request.responseText !== null && request.responseText.length > 0 && formatter !== undefined) {
+                                data = formatter(request.responseText);
+                            }
+                            resolve(data, request);
+                        } else {
+                            if (request.responseText !== null && request.responseText.length > 0) {
+                                data = JSON.parse(request.responseText);
+                            }
+                            reject(data, request);
+                        }
+                    };
+                    request.onerror = function () {
+                        reject({ message: 'Failed to connect to server.' });
+                    };
+                    if (body === null) {
+                        request.send();
+                    } else {
+                        request.send(body);
+                    }
+                });
+            }
+            function DateFormatter(value) { return new Date(value); }
+            window.api = {
+                values: {
+                    getAll: function () { return http("GET", "/api/values", null, JSON.parse); },
+                    get: function (id) { return http("GET", "/api/values/" + encodeURIComponent(id) + "", null, String); },
+                    post: function (value) { return http("POST", "/api/values", value, undefined); },
+                    put: function (id, value) { return http("PUT", "/api/values/" + encodeURIComponent(id) + "", value, undefined); },
+                    delete: function (id) { return http("DELETE", "/api/values/" + encodeURIComponent(id) + "", null, undefined); },
+                },
+            }
+        })()
+
+    </script>
+</head>
+<body>
+    <h1>Hello</h1>
+</body>
+</html>
