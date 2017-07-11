@@ -35,9 +35,10 @@ Well I still have to figure it out.
 In the future this will be a nuget package you just drop in into your web project and hook up to the generator to a controller and you include that controller as a script.
 
 
-## K, but this doesn't do XXX
+## K, but this doesn't do XYZ
 
-This project is still at the very beginning. Plans are to:
+This project is still at the very beginning so a lot of features are missing.
+Plans are to:
 
 	- support both .net Core and classic .net
 	- role based api generation, only show functions that are accessible from users role
