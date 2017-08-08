@@ -6,22 +6,8 @@ using System.Text.RegularExpressions;
 
 namespace Js2Cs
 {
-    public class JsGenerator
+    public partial class JsGenerator
     {
-        public enum ModuleLoaderType
-        {
-            Autodetect = 0,
-            CommonJs = 1,
-            Amd = 2,
-            Es6 = 3,
-            GlobalVariable = 4
-        }
-
-        public enum HttpImplementation
-        {
-            Xhr = 0,
-            Promise = 1
-        }
 
         private static string boilerplatePromise = @"
                 function http (method, url, data, formatter) {
@@ -124,6 +110,7 @@ namespace Js2Cs
             var sb = new StringBuilder();
 
             GenerateHeader(sb);
+            sb.AppendLine(boilerplatePromise);
             foreach (var controller in controllerEnumerator.Enumerate())
             {
                 sb.AppendLine($"\t{this.VariableName}.{controller.jsname} = {{");
