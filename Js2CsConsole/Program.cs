@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Reflection;
-using static Js2Cs.JsGenerator;
+using Js2Cs;
 
 namespace Js2CsConsole
 {

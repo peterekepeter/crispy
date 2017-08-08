@@ -27,15 +27,18 @@ You can create an API endpoint which serves the javascript to be used in your fr
 
 	namespace ApiTest.Controllers
 	{
+		[Route("api/[controller]")]
 		public class Js2CsController : Controller
 		{
+			[HttpGet]
 			public ContentResult GetApiDefinition()
 			{
 				// create generator instance
 				var generator = new JsGenerator()
 					// and configure it
 					.UseModuleType(ModuleLoaderType.GlobalVariable)
-					.UseVariableName("api");
+					.UseVariableName("api")
+					.UsePrettyPrint();
 
 				// get assembly of web project
 				var assembly = typeof(Js2CsController).GetTypeInfo().Assembly;
@@ -48,6 +51,7 @@ You can create an API endpoint which serves the javascript to be used in your fr
 			}
 		}
 	}
+
 
 ### Step 2: Implement API for application logic ###
 
@@ -126,6 +130,9 @@ That's all, we can call the backend code with `api.todo.getAll()` and `api.todo.
 		</script>
 	</body>
 	</html>
+
+If you're using an API project, you might want to include the static file module so that you can serve the html from above. 
+Don't forget to add `app.UseStaticFiles();` into your `Startup.cs`.
 
 
 ## K, but this doesn't do XYZ

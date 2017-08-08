@@ -2,6 +2,26 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
+    <PackageId>Js2Cs.peterekepeter</PackageId>
+    <Authors>Eke Péter</Authors>
+    <Company />
+    <Description>Js2Cs allows web applications to easily transtion between frontend and backend code. It does this by generating javascript wrappers for C# code. It can be used with standard mvc controllers. Currently only dotnet core is supported.</Description>
+    <PackageLicenseUrl>https://github.com/peterekepeter/js2cs/blob/master/LICENSE.txt</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/peterekepeter/js2cs</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/peterekepeter/js2cs.git</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
+    <PackageTags>javascript c# frontend backend fullstack api promise</PackageTags>
+    <PackageReleaseNotes>The project is at the very beginning. A lot of features might be still missing or lacking. Feel free to go to the github page and create issues there.</PackageReleaseNotes>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>Js2Cs.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>Js2Cs.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
