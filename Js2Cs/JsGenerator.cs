@@ -6,9 +6,9 @@ using System.Text.RegularExpressions;
 
 namespace Js2Cs
 {
+    /// <summary> Generates the JavaScript code necessary for the API. </summary>
     public partial class JsGenerator
     {
-
         private static string boilerplatePromise = @"
                 function http (method, url, data, formatter) {
                 // create a promise
@@ -61,39 +61,35 @@ namespace Js2Cs
         private bool prettyPrint;
         private static Regex uglifyRegex = new Regex(@"(?:\/\/[^\n]*\n\s*|\/\*.*?\*\/\s*|\s+)", RegexOptions.Singleline | RegexOptions.CultureInvariant | RegexOptions.Compiled); 
 
+        /// <summary> Generates JavaScript code. </summary>
         public JsGenerator()
         {
             ModuleType = ModuleLoaderType.Autodetect;
             VariableName = "api"; 
         }
         
+        /// <summary> Will pretty print the javascript, useful for debugging. </summary>
         public JsGenerator UsePrettyPrint(bool value=true)
         {
             this.prettyPrint = value;
             return this;
         }
 
-        /// <summary>
-        /// Specifies how to export the module
-        /// </summary>
+        /// <summary> Specifies how to export the module </summary>
         public JsGenerator UseModuleType(ModuleLoaderType type)
         {
             this.ModuleType = type;
             return this; 
         }
 
-        /// <summary>
-        /// Specify how the JS lib makes the requests
-        /// </summary>
+        /// <summary> Specify how the JS lib makes the requests </summary>
         public JsGenerator UseHttpImplementation(HttpImplementation imp)
         {
             this.Boilerplate = imp;
             return this;
         }
         
-        /// <summary>
-        /// Set value for global variable, used if module type is globalvar
-        /// </summary>
+        /// <summary> Set value for global variable, used if module type is globalvar </summary>
         public JsGenerator UseVariableName(string value)
         {
             this.VariableName = value;
@@ -101,9 +97,7 @@ namespace Js2Cs
         }
 
 
-        /// <summary>
-        /// Generate a single blob
-        /// </summary>
+        /// <summary> Generate a single blob </summary>
         public string GenerateSingleFile(Assembly targetAssembly, String targetNamespace)
         {
             var controllerEnumerator = new ControllerEnumerator(targetAssembly).UseNamespace(targetNamespace);

@@ -166,7 +166,6 @@ namespace Js2Cs
                     var parameterModel = new ParameterModel();
                     parameterModel.info = parameter;
                    
-                    bool basic = true;
                     var fromRoute = parameter.GetCustomAttribute<Microsoft.AspNetCore.Mvc.FromRouteAttribute>();
                     var fromQuery = parameter.GetCustomAttribute<Microsoft.AspNetCore.Mvc.FromQueryAttribute>();
                     var fromBody = parameter.GetCustomAttribute<Microsoft.AspNetCore.Mvc.FromBodyAttribute>();
