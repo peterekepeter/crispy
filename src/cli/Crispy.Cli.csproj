@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ApiTest\ApiTest.csproj" />
-    <ProjectReference Include="..\Js2Cs\Js2Cs.csproj" />
+    <ProjectReference Include="..\Crispy\Crispy.csproj" />
   </ItemGroup>
 
 </Project>

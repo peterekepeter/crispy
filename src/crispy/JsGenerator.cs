@@ -4,7 +4,7 @@ using System.Text;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
-namespace Js2Cs
+namespace Crispy
 {
     /// <summary> Generates the JavaScript code necessary for the API. </summary>
     public partial class JsGenerator
@@ -100,14 +100,17 @@ namespace Js2Cs
         /// <summary> Generate a single blob </summary>
         public string GenerateSingleFile(Assembly targetAssembly, String targetNamespace)
         {
-            var controllerEnumerator = new ControllerEnumerator(targetAssembly).UseNamespace(targetNamespace);
+            var controllerScanner = 
+                new Scanner.ControllerScannerImpl(targetAssembly)
+                .FromNamespace(targetNamespace);
+
             var sb = new StringBuilder();
 
             GenerateHeader(sb);
             sb.AppendLine(boilerplatePromise);
-            foreach (var controller in controllerEnumerator.Enumerate())
+            foreach (var controller in controllerScanner.ScanForControllers())
             {
-                sb.AppendLine($"\t{this.VariableName}.{controller.jsname} = {{");
+                sb.AppendLine($"\t{this.VariableName}.{controller.NameCamelCase} = {{");
                 GenerateController(sb, controller);
                 sb.AppendLine("\t};");
             }
@@ -160,32 +163,32 @@ namespace Js2Cs
             }
         }
 
-        private static void GenerateController(StringBuilder sb, ControllerEnumerator.Model controller)
+        private static void GenerateController(StringBuilder sb, Controller controller)
         {
             // enumarates endpoits in controller
-            var endpoints = new EndpointEnumerator(controller);
+            var endpoints = new Scanner.EndpointScannerImpl(controller);
             foreach (var endpoint in endpoints.Enumerate())
             {
                 GenerateEndpoint(sb, endpoint);
             }
         }
 
-        private static void GenerateEndpoint(StringBuilder sb, EndpointEnumerator.Model endpoint)
+        private static void GenerateEndpoint(StringBuilder sb, Endpoint endpoint)
         {
-            sb.Append($"\t\t{endpoint.jsname}: function(");
+            sb.Append($"\t\t{endpoint.NameCamelCase}: function(");
             // generate function vars
             var separator = "";
-            foreach (var parameter in endpoint.parameters)
+            foreach (var parameter in endpoint.Parameters)
             {
                 sb.Append(separator);
                 sb.Append(parameter.jsname);
                 separator = ", ";
             }
             // continue function
-            sb.Append($"){{ return http(\"{endpoint.httpMehod}\", ");
+            sb.Append($"){{ return http(\"{endpoint.HttpMethod}\", ");
             // resolve route params
-            var httpRoute = "\"" + endpoint.httpRoute;
-            foreach (var parameter in endpoint.parameters)
+            var httpRoute = "\"" + endpoint.HttpRoute;
+            foreach (var parameter in endpoint.Parameters)
             {
                 if (parameter.isRouteParameter)
                 {
@@ -195,7 +198,7 @@ namespace Js2Cs
             }
             // resolve query params
             separator = "?";
-            foreach (var parameter in endpoint.parameters)
+            foreach (var parameter in endpoint.Parameters)
             {
                 if (parameter.isQueryParameter)
                 {
@@ -206,8 +209,8 @@ namespace Js2Cs
             // write route
             sb.Append(httpRoute + "\", ");
             // find body param
-            EndpointEnumerator.ParameterModel bodyParam = null;
-            foreach (var parameter in endpoint.parameters)
+            Parameter bodyParam = null;
+            foreach (var parameter in endpoint.Parameters)
             {
                 if (parameter.isBodyParameter)
                 {
@@ -233,25 +236,25 @@ namespace Js2Cs
             sb.Append(", ");
             // return type formatter
 
-            if (endpoint.returnType == typeof(String))
+            if (endpoint.ReturnType == typeof(String))
             {
                 sb.Append("String");
             }
-            else if (endpoint.returnType == typeof(Boolean))
+            else if (endpoint.ReturnType == typeof(Boolean))
             {
                 sb.Append("Boolean");
             }
-            else if (endpoint.returnType == typeof(DateTime) || endpoint.returnType == typeof(DateTimeOffset))
+            else if (endpoint.ReturnType == typeof(DateTime) || endpoint.ReturnType == typeof(DateTimeOffset))
             {
                 sb.Append("DateFormatter");
             }
-            else if (endpoint.returnType == typeof(Int16) || endpoint.returnType == typeof(Int32) || endpoint.returnType == typeof(Int64)
-                || endpoint.returnType == typeof(UInt16) || endpoint.returnType == typeof(UInt32) || endpoint.returnType == typeof(UInt64)
-                || endpoint.returnType == typeof(Decimal) || endpoint.returnType == typeof(Single) || endpoint.returnType == typeof(Double))
+            else if (endpoint.ReturnType == typeof(Int16) || endpoint.ReturnType == typeof(Int32) || endpoint.ReturnType == typeof(Int64)
+                || endpoint.ReturnType == typeof(UInt16) || endpoint.ReturnType == typeof(UInt32) || endpoint.ReturnType == typeof(UInt64)
+                || endpoint.ReturnType == typeof(Decimal) || endpoint.ReturnType == typeof(Single) || endpoint.ReturnType == typeof(Double))
             {
                 sb.Append("Number");
             }
-            else if (endpoint.returnType == typeof(void))
+            else if (endpoint.ReturnType == typeof(void))
             {
                 sb.Append("undefined");
             }

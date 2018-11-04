@@ -1,11 +1,11 @@
-﻿using Js2Cs;
+﻿using Crispy;
 using Microsoft.AspNetCore.Mvc;
 using System.Reflection;
 
 namespace ApiTest.Controllers
 {
     [Route("api/[controller]")]
-    public class Js2CsController : Controller
+    public class CrispyController : Controller
     {
         [HttpGet]
         public ContentResult GetApiDefinition()
@@ -18,7 +18,7 @@ namespace ApiTest.Controllers
                 .UsePrettyPrint();
 
             // get assembly of web project
-            var assembly = typeof(Js2CsController).GetTypeInfo().Assembly;
+            var assembly = typeof(CrispyController).GetTypeInfo().Assembly;
 
             // generate some js
             var javascript = generator.GenerateSingleFile(assembly, "ApiTest.Controllers");

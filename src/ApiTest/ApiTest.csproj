@@ -12,7 +12,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\Js2Cs\Js2Cs.csproj" />
+    <ProjectReference Include="..\Crispy\Crispy.csproj" />
   </ItemGroup>
 
 </Project>

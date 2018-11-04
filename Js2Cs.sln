@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26430.12
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Js2Cs", "Js2Cs\Js2Cs.csproj", "{472D7E2A-0B52-4A61-8509-38478FEFD6C0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Crispy", "crispy\Crispy.csproj", "{472D7E2A-0B52-4A61-8509-38478FEFD6C0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Js2CsConsole", "Js2CsConsole\Js2CsConsole.csproj", "{9EF7E708-5BC4-4365-97B6-5C76324B613F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Crispy.Cli", "cli\Crispy.Cli.csproj", "{9EF7E708-5BC4-4365-97B6-5C76324B613F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiTest", "ApiTest\ApiTest.csproj", "{C5B129A3-190F-4257-BADE-C1C459973C4A}"
 EndProject

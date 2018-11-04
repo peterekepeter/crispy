@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Reflection;
-using Js2Cs;
+using Cirspy;
 
-namespace Js2CsConsole
+namespace Crispy.Cli
 {
     class Program
     {
@@ -12,13 +12,13 @@ namespace Js2CsConsole
             foreach(var  type in supportedTypes)
             {
                 Console.WriteLine("\n======== " + type.ToString() + "\n");
-                var generator = new Js2Cs.JsGenerator().UsePrettyPrint(true).UseModuleType(type);
+                var generator = new Cirspy.JsGenerator().UsePrettyPrint(true).UseModuleType(type);
                 Generate(generator);
             }
 
         }
 
-        private static void Generate(Js2Cs.JsGenerator generator)
+        private static void Generate(Crispy.JsGenerator generator)
         {
             var result = generator.GenerateSingleFile(typeof(ApiTest.Program).GetTypeInfo().Assembly, "ApiTest.Controllers");
             Console.WriteLine(result);
