@@ -4,11 +4,11 @@ namespace Crispy
 {
     public class Parameter
     {
-        internal ParameterInfo info;
-        internal bool isRouteParameter;
-        internal string httpName;
-        internal bool isBodyParameter;
-        internal bool isQueryParameter;
-        internal string jsname;
+        public ParameterInfo info;
+        public bool isRouteParameter;
+        public string httpName;
+        public bool isBodyParameter;
+        public bool isQueryParameter;
+        public string jsname;
     }
 }

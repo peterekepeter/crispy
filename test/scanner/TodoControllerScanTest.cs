@@ -15,12 +15,56 @@ namespace Test.Scanner
             => Endpoints.First(y => y.Name == "Add");
 
         [TestMethod]
-        public void ThereShouldBeTwoEndpoints()
-            => Endpoints.Should().HaveCount(2);
+        public void ThereShouldBeThreeEndpoints()
+            => Endpoints.Should().HaveCount(3);
 
         [TestMethod]
         public void ShouldDetectParameter()
             => AddEndpoint.Parameters.Should().HaveCount(1);
+
+        [TestMethod]
+        public void AddEnpointHasPostMethod()
+            => AddEndpoint.HttpMethod.Should().Be("POST");
+
+        [TestMethod]
+        public void AddEndpointHasParameter()
+            => AddEndpoint.Parameters.Should().NotBeEmpty();
+
+        [TestMethod]
+        public void AddEndpointHasOneParameter()
+            => AddEndpoint.Parameters.Should().HaveCount(1);
+
+        internal Crispy.Parameter AddParameter 
+            => AddEndpoint.Parameters.Single();
+
+        [TestMethod]
+        public void AddEndpointParameterIsInBody()
+            => AddParameter.isBodyParameter.Should().Be(true);
+
+        internal Crispy.Endpoint UpdateEndpoint 
+            => Endpoints.First(y => y.Name == "Update");
+
+        [TestMethod]
+        public void UpdateEndpointHasPatchMethod()
+            => UpdateEndpoint.HttpMethod.Should().Be("PATCH");
+
+        [TestMethod]
+        public void UpdateEndpointHasTwoParameters()
+            => UpdateEndpoint.Parameters.Should().HaveCount(2);
+
+        internal Crispy.Parameter UpdateFirstParam
+            => UpdateEndpoint.Parameters[0];
+
+        internal Crispy.Parameter UpdateSecondParam
+            => UpdateEndpoint.Parameters[1];
+
+        [TestMethod]
+        public void UpdateFirstParamIsQuery()
+            => UpdateFirstParam.isQueryParameter.Should().Be(true);
+
+        [TestMethod]
+        public void UpdateSecondParamIsBody()
+            => UpdateSecondParam.isBodyParameter.Should().Be(true);
         
     }
 }
