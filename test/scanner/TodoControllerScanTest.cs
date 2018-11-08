@@ -15,8 +15,8 @@ namespace Test.Scanner
             => Endpoints.First(y => y.Name == "Add");
 
         [TestMethod]
-        public void ThereShouldBeThreeEndpoints()
-            => Endpoints.Should().HaveCount(3);
+        public void ThereShouldBeFiveEndpoints()
+            => Endpoints.Should().HaveCount(5);
 
         [TestMethod]
         public void ShouldDetectParameter()
@@ -39,7 +39,7 @@ namespace Test.Scanner
 
         [TestMethod]
         public void AddEndpointParameterIsInBody()
-            => AddParameter.isBodyParameter.Should().Be(true);
+            => AddParameter.IsBody.Should().Be(true);
 
         internal Crispy.Endpoint UpdateEndpoint 
             => Endpoints.First(y => y.Name == "Update");
@@ -60,11 +60,11 @@ namespace Test.Scanner
 
         [TestMethod]
         public void UpdateFirstParamIsQuery()
-            => UpdateFirstParam.isQueryParameter.Should().Be(true);
+            => UpdateFirstParam.IsQuery.Should().Be(true);
 
         [TestMethod]
         public void UpdateSecondParamIsBody()
-            => UpdateSecondParam.isBodyParameter.Should().Be(true);
+            => UpdateSecondParam.IsBody.Should().Be(true);
         
     }
 }

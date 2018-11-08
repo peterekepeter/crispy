@@ -141,53 +141,53 @@ namespace Crispy.Scanner
                 };
                 Console.WriteLine($"Endpoint {endpoint.Controller.Name}");
                 // and now for the parameters
-                foreach (var parameter in method.GetParameters())
+                foreach (var methodParam in method.GetParameters())
                 {
-                    var model = new Parameter();
-                    model.info = parameter;
+                    var parameter = new Parameter();
+                    parameter.info = methodParam;
                    
-                    var fromRoute = parameter.GetCustomAttribute<Microsoft.AspNetCore.Mvc.FromRouteAttribute>();
-                    var fromQuery = parameter.GetCustomAttribute<Microsoft.AspNetCore.Mvc.FromQueryAttribute>();
-                    var fromBody = parameter.GetCustomAttribute<Microsoft.AspNetCore.Mvc.FromBodyAttribute>();
+                    var fromRoute = methodParam.GetCustomAttribute<Microsoft.AspNetCore.Mvc.FromRouteAttribute>();
+                    var fromQuery = methodParam.GetCustomAttribute<Microsoft.AspNetCore.Mvc.FromQueryAttribute>();
+                    var fromBody = methodParam.GetCustomAttribute<Microsoft.AspNetCore.Mvc.FromBodyAttribute>();
 
                     if (fromRoute != null)
                     {
-                        model.isRouteParameter = true;
-                        model.httpName = fromRoute.Name ?? parameter.Name;
+                        parameter.IsRoute = true;
+                        parameter.httpName = fromRoute.Name ?? methodParam.Name;
                     }
                     else  if (fromQuery != null)
                     {
-                        model.isQueryParameter = true;
-                        model.httpName = fromQuery.Name ?? parameter.Name;
+                        parameter.IsQuery = true;
+                        parameter.httpName = fromQuery.Name ?? methodParam.Name;
                     }
                     else if (fromBody != null)
                     {
-                        model.isBodyParameter = true;
-                        model.httpName = null;
+                        parameter.IsBody = true;
+                        parameter.httpName = null;
                     }
                     else
                     {
-                        var t = parameter.ParameterType;
+                        var t = methodParam.ParameterType;
                         if (t.GetTypeInfo().IsPrimitive || t == typeof(Decimal) || t == typeof(String))
                         {
-                            if (endpoint.HttpRoute.Contains("{" + parameter.Name + "}"))
+                            if (endpoint.HttpRoute.Contains("{" + methodParam.Name + "}"))
                             {
-                                model.isRouteParameter = true;
-                                model.httpName = parameter.Name;
+                                parameter.IsRoute = true;
+                                parameter.httpName = methodParam.Name;
                             }
                             else
                             {
-                                model.isQueryParameter = true;
-                                model.httpName = parameter.Name;
+                                parameter.IsQuery = true;
+                                parameter.httpName = methodParam.Name;
                             }
                         } else
                         {
-                            model.isBodyParameter = true;
-                            model.httpName = null;
+                            parameter.IsBody = true;
+                            parameter.httpName = null;
                         }
                     }
-                    model.jsname = parameter.Name.LowerFirstLetter();
-                    endpoint.Parameters.Add(model);
+                    parameter.jsname = methodParam.Name.LowerFirstLetter();
+                    endpoint.Parameters.Add(parameter);
                 }
                 endpoint.ReturnType = method.ReturnType;
                 yield return endpoint;

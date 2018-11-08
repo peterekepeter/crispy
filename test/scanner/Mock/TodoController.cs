@@ -17,7 +17,16 @@ namespace Test.Scanner.Mock
         public void Add([FromBody]string value) => list.Add(value);
 
         [HttpPatch]
-        public void Update([FromQuery] string which, [FromBody] string value)
-            => list[list.IndexOf(which)] = value;
+        public void Update([FromQuery] string key, [FromBody] string value)
+            => list[list.IndexOf(key)] = value;
+        
+        [HttpPut("{key}")]
+        public void Replace([FromRoute] string key, [FromBody] string value)
+            => list[list.IndexOf(key)] = value;
+
+        [HttpDelete]
+        public void Delete([FromQuery] string key)
+            => list.Remove(key);
+        
     }
 }

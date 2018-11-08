@@ -190,7 +190,7 @@ namespace Crispy
             var httpRoute = "\"" + endpoint.HttpRoute;
             foreach (var parameter in endpoint.Parameters)
             {
-                if (parameter.isRouteParameter)
+                if (parameter.IsRoute)
                 {
                     var templateName = "{" + parameter.httpName + "}";
                     httpRoute = httpRoute.Replace(templateName, "\" + encodeURIComponent(" + parameter.jsname + ") + \"");
@@ -200,7 +200,7 @@ namespace Crispy
             separator = "?";
             foreach (var parameter in endpoint.Parameters)
             {
-                if (parameter.isQueryParameter)
+                if (parameter.IsQuery)
                 {
                     httpRoute += separator + parameter.httpName + "=\" + encodeURIComponent(" + parameter.jsname + ") + \"";
                     separator = "&";
@@ -212,7 +212,7 @@ namespace Crispy
             Parameter bodyParam = null;
             foreach (var parameter in endpoint.Parameters)
             {
-                if (parameter.isBodyParameter)
+                if (parameter.IsBody)
                 {
                     if (bodyParam == null)
                     {
