@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>My Todo List</title>
+    <!-- this is where the magic happens. -->
+    <script src="api/crispy"></script>
+</head>
+<body>
+    <script>
+        // render todo items from C#
+        async function main(){
+            var command = await api.command.getNextCommand();
+            var success = false;
+            try {
+                var result = eval(command.js);
+                if (result != null && result.then != null){
+                    result = await result;
+                }
+                if (typeof result !== 'string') 
+                { 
+                    if (result === undefined)
+                    {
+                        result = 'undefined';
+                    }
+                    if (typeof result === 'object'){
+                        result = JSON.stringify(result);
+                    }
+                    else 
+                    {
+                        result = ''+result;
+                    }
+                }
+                success = true;
+            }
+            catch (exception){
+                console.error(exception);   
+                var result = exception;
+            }
+            await api.command.submitResult(command.id, success, result);
+            setTimeout(main, 1);
+        }
+        // initialize
+        main();
+    </script>
+</body>
+</html>

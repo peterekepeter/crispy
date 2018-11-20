@@ -64,16 +64,15 @@ namespace Crispy.Scanner
         {
             var name = type.Name;
             var info = type.GetTypeInfo();
-            var nameLower = name.ToLowerInvariant();
             var route = info
                 .GetCustomAttribute<Microsoft.AspNetCore.Mvc.RouteAttribute>();
-            var routeString = route == null 
-                ? "/" + name.ToLowerInvariant() 
-                : "/" + route.Template.Replace("[controller]", nameLower);
             var namePascal = controllerSuffix == null
                 ? name
                 : name.Substring(0, name.LastIndexOf(controllerSuffix));
             var nameCamel = namePascal.LowerFirstLetter();
+            var routeString = route == null 
+                ? "/" + name.ToLowerInvariant() 
+                : "/" + route.Template.Replace("[controller]", nameCamel);
             return new Controller() {
                 Type = type,
                 Name = namePascal,

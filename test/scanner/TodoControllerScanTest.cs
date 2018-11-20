@@ -15,6 +15,23 @@ namespace Test.Scanner
             => Endpoints.First(y => y.Name == "Add");
 
         [TestMethod]
+        public void ControllerPascalNameIsCorrect()
+            => AddEndpoint.Controller.Name.Should().Be("Todo");
+
+        [TestMethod]
+        public void ControllerCameNameIsCorrect()
+            => AddEndpoint.Controller.NameCamelCase.Should().Be("todo");
+            
+        [TestMethod]
+        public void ControllerRouteIsCorrect()
+            => AddEndpoint.Controller.Route.Should().Be("/api/todo");
+
+        [TestMethod]
+        public void EndpointRouteIsCorrect()
+            => AddEndpoint.HttpRoute.Should().Be("/api/todo");
+        
+
+        [TestMethod]
         public void ThereShouldBeFiveEndpoints()
             => Endpoints.Should().HaveCount(5);
 
