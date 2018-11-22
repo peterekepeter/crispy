@@ -15,16 +15,6 @@ namespace ApiTest.Services
 
     public class CommandService
     {
-        public CommandService(){
-            Task.Run(async () => {
-                while(true){
-                    await Task.Delay(1000);
-                    Console.WriteLine(" !!!! trying to exec");
-                    await Execute($"console.log('hello from backend {IdGenerator}');");
-                }
-            });
-        }
-
         internal int IdGenerator = 0;
 
         private class Command
