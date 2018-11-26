@@ -43,11 +43,29 @@ namespace ApiTest.Services
         private BufferBlock<Command> CommandQueue
             = new BufferBlock<Command>();
 
+        private int connectionStat = 0;
+
+        private TaskCompletionSource<object> firstClient 
+            = new TaskCompletionSource<object>();
+
+        public async Task<Boolean> WaitClientAsync(int timeout)
+        {
+            if (connectionStat >= 1) { return true; }
+            var waitTask = firstClient.Task;
+            var delayTask = Task.Delay(timeout);
+            var firstComplete = await Task.WhenAny(waitTask, delayTask);
+            if (firstComplete == delayTask){ return false; }
+            return true;
+        }
+
         public async Task<CommandObject> GetExecutionCommand()
         {
+            if (Interlocked.Increment(ref connectionStat) == 1){
+                firstClient.SetResult(null);
+            }
             var item = await CommandQueue.ReceiveAsync();
             
-            Task.Delay(1000).ContinueWith(async (task)=>{
+            Task.Delay(2000).ContinueWith(async (task)=>{
                 if (item.Completion.Task.IsCompleted) { return; }
                 await Console.Out.WriteAsync($"Re-issuing command {item.Obj.Id}");
                 await CommandQueue.SendAsync(item);

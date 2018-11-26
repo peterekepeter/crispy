@@ -8,9 +8,27 @@
 </head>
 <body>
     <script>
+        let connected = true;
         // render todo items from C#
         async function main(){
-            var command = await api.command.getNextCommand();
+            try{
+                if (connected == false){ console.info("reconnecting"); }
+                var command = await api.command.getNextCommand();
+                if (connected == false){ 
+                    console.info("connection established");
+                    connected = true;
+                }
+            }
+            catch(exception)
+            {
+                if (connected == true){
+                    connected = false;
+                    console.info("seems to be disconnected");
+                }
+                console.error(exception);
+                setTimeout(main, 100);
+                return;
+            }
             var success = false;
             try {
                 var result = eval(command.js);
@@ -37,10 +55,17 @@
                 console.error(exception);   
                 var result = exception;
             }
-            await api.command.submitResult(command.id, success, result);
+            try{
+                await api.command.submitResult(command.id, success, result);
+            } 
+            catch
+            {
+                console.warn("Might have failed submitting result.",result);
+            }
             setTimeout(main, 1);
         }
         // initialize
+        console.log("init");
         main();
     </script>
 </body>

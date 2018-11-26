@@ -45,12 +45,21 @@ namespace Test.JsWeb
         Task<string> Execute(string javascript) 
             => _instance.Execute(javascript);
 
-        Task StartAsync()
+        async Task StartAsync()
         {
             WriteLine("Server thread started!");
             var currentDir = Directory.GetCurrentDirectory();
             WriteLine($"Current dir is: {currentDir}");
-            var serverDir = currentDir + "/../../../../server";
+            var dir = currentDir;
+            var separator = "\\";
+            while (!dir.EndsWith("test")) { 
+                var lastIndex = dir.LastIndexOf(separator);
+                if (lastIndex <= 0) { break; }
+                dir = dir.Substring(0, lastIndex);
+                WriteLine(dir);
+            }
+            var serverDir = dir + separator + "server";
+            WriteLine($"Using directory: {serverDir}");
             var host = new WebHostBuilder()
                 .UseKestrel(option => option.ListenLocalhost(this.Port))
                 .UseContentRoot(serverDir)
@@ -58,16 +67,25 @@ namespace Test.JsWeb
                 .Build();
             
             Command = host.Services.GetService<CommandService>();
-            host.RunAsync();
-            return Task.Delay(1);
+            await host.StartAsync();
         }
 
-        Task StartBrowser(){
+        async Task StartBrowser(bool firefox = true){
+            if (await Command.WaitClientAsync(2000)){
+                WriteLine("Reconnected to previous tab!");
+                return;
+            }
+
+            // works well on firefox
+            var firefoxPath= "C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe";
+            // for some reason it doesnt work on chrome
+            var chromePath = "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe";
             
-            var path = "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe";
-            WriteLine($"Looking for chrome {path}");
+            var path = firefox ? firefoxPath : chromePath;
+
+            WriteLine($"Looking for a browser {path}");
             if (File.Exists(path)){
-                WriteLine("Found!");
+                WriteLine("Found a browser!");
             }
             var info = new ProcessStartInfo(){
                 FileName = path,
@@ -75,7 +93,7 @@ namespace Test.JsWeb
             };
             
             var process = Process.Start(info);
-            return Task.CompletedTask;
+            return;
         }
     }
 

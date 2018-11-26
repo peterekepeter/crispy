@@ -20,5 +20,13 @@ namespace Test.JsWeb
             var result = await httpClient.GetAsync(url);
             result.StatusCode.Should().Be(HttpStatusCode.OK);
         }
+
+        [TestMethod]
+        public async Task WeCanActuallyRunJavascript()
+        {
+            var context = await Context.GetInstance();
+            var result = await context.Command.Execute("3+4");
+            result.Should().Be("7");
+        }
     }
 }
