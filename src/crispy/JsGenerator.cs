@@ -133,8 +133,9 @@ namespace Crispy
                     break;
                 case ModuleLoaderType.CommonJs:
                 case ModuleLoaderType.GlobalVariable:
+                    break;
                 case ModuleLoaderType.Es6:
-                    sb.AppendLine("})();");
+                    sb.AppendLine("\texport default api;");
                     break;
             }
         }
@@ -144,8 +145,7 @@ namespace Crispy
             switch (ModuleType)
             {
                 case ModuleLoaderType.Es6:
-                    sb.AppendLine("export (function(){");
-                    sb.AppendLine("\tvar " + this.VariableName + " = {};");
+                    sb.AppendLine("\tconst " + this.VariableName + " = {};");
                     break;
                 case ModuleLoaderType.Amd:
                     sb.AppendLine("define(function(){");
