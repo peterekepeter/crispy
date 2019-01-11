@@ -94,7 +94,6 @@ namespace Crispy
             return this;
         }
 
-
         /// <summary> Generate a single blob </summary>
         public string GenerateSingleFile(Assembly targetAssembly, String targetNamespace)
         {

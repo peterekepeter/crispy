@@ -46,8 +46,8 @@ namespace Crispy.Scanner
             // only those from desired namespace
             if (namespaceFilter != null)
             {
-                types = types.Where(type => type.Namespace
-                    .StartsWith(namespaceFilter));
+                types = types.Where(type => type.Namespace != null && 
+                    type.Namespace.StartsWith(namespaceFilter));
             }
 
             // only those that end with "Controller"

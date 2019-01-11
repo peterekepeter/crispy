@@ -12,5 +12,6 @@ namespace Crispy
             .ScanForControllers()
             .SelectMany(y => new Scanner.EndpointScannerImpl(y)
             .ScanEndpoints());
+            
     }
 }
