@@ -36,7 +36,7 @@ namespace Crispy.Scanner
             return this;
         }
 
-        internal IEnumerable<Controller> ScanForControllers()
+        internal IEnumerable<ControllerInfo> ScanForControllers()
         {
             // get some controllers
             IEnumerable<Type> types = onlyController == null 
@@ -60,7 +60,7 @@ namespace Crispy.Scanner
             return types.Select(CreateController);
         }
 
-        internal Controller CreateController(Type type)
+        internal ControllerInfo CreateController(Type type)
         {
             var name = type.Name;
             var info = type.GetTypeInfo();
@@ -73,7 +73,7 @@ namespace Crispy.Scanner
             var routeString = route == null 
                 ? "/" + name.ToLowerInvariant() 
                 : "/" + route.Template.Replace("[controller]", nameCamel);
-            return new Controller() {
+            return new ControllerInfo() {
                 Type = type,
                 Name = namePascal,
                 NameCamelCase = nameCamel,

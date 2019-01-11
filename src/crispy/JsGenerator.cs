@@ -163,7 +163,7 @@ namespace Crispy
             }
         }
 
-        private static void GenerateController(StringBuilder sb, Controller controller)
+        private static void GenerateController(StringBuilder sb, ControllerInfo controller)
         {
             // enumarates endpoits in controller
             var endpoints = new Scanner.EndpointScannerImpl(controller);

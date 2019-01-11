@@ -6,7 +6,7 @@ namespace Crispy
 {
     public class Endpoint
     {
-        public Controller Controller;
+        public ControllerInfo Controller;
         public MethodInfo MethodInfo;
         public string HttpMethod;
         public string HttpRoute;

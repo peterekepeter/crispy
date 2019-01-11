@@ -8,9 +8,9 @@ namespace Crispy.Scanner
 {
     internal class EndpointScannerImpl
     {
-        private Controller controller;
+        private ControllerInfo controller;
 
-        public EndpointScannerImpl(Controller controller)
+        public EndpointScannerImpl(ControllerInfo controller)
         {
             this.controller = controller;
         }
