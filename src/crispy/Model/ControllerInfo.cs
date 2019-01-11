@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Crispy
 {
-    /// <summary> Contains reflected information about an AspNetCore.Mvc controller </summary>
+    /// <summary> Reflected information about an AspNetCore.Mvc controller </summary>
     public class ControllerInfo
     {
         /// <summary> Name of the controller in PascalCase </summary>
