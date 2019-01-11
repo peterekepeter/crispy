@@ -8,10 +8,10 @@ namespace Test.Scanner
     [TestClass]
     public class TodoControllerScanTest
     {
-        internal IEnumerable<Crispy.Endpoint> Endpoints
+        internal IEnumerable<Crispy.EndpointInfo> Endpoints
             => Crispy.EndpointScanner.Scan<Mock.TodoController>();
 
-        internal Crispy.Endpoint AddEndpoint 
+        internal Crispy.EndpointInfo AddEndpoint 
             => Endpoints.First(y => y.Name == "Add");
 
         [TestMethod]
@@ -51,14 +51,14 @@ namespace Test.Scanner
         public void AddEndpointHasOneParameter()
             => AddEndpoint.Parameters.Should().HaveCount(1);
 
-        internal Crispy.Parameter AddParameter 
+        internal Crispy.ParameterInfo AddParameter 
             => AddEndpoint.Parameters.Single();
 
         [TestMethod]
         public void AddEndpointParameterIsInBody()
             => AddParameter.IsBody.Should().Be(true);
 
-        internal Crispy.Endpoint UpdateEndpoint 
+        internal Crispy.EndpointInfo UpdateEndpoint 
             => Endpoints.First(y => y.Name == "Update");
 
         [TestMethod]
@@ -69,10 +69,10 @@ namespace Test.Scanner
         public void UpdateEndpointHasTwoParameters()
             => UpdateEndpoint.Parameters.Should().HaveCount(2);
 
-        internal Crispy.Parameter UpdateFirstParam
+        internal Crispy.ParameterInfo UpdateFirstParam
             => UpdateEndpoint.Parameters[0];
 
-        internal Crispy.Parameter UpdateSecondParam
+        internal Crispy.ParameterInfo UpdateSecondParam
             => UpdateEndpoint.Parameters[1];
 
         [TestMethod]

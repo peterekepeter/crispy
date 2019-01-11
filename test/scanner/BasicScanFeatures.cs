@@ -15,7 +15,7 @@ namespace Test.Scanner
             endpoints.Should().HaveCount(1);
         }
 
-        internal Crispy.Endpoint Endpoint
+        internal Crispy.EndpointInfo Endpoint
             => Crispy.EndpointScanner.Scan<Mock.BasicController>().Single();
 
         [TestMethod]

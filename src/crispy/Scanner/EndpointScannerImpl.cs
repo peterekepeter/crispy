@@ -15,14 +15,14 @@ namespace Crispy.Scanner
             this.controller = controller;
         }
 
-        private void DetermineAuthorization(TypeInfo type, out Authorization authorization)
+        private void DetermineAuthorization(TypeInfo type, out AuthorizationInfo authorization)
         {
             var allowAnonymousAttribute = type.GetCustomAttribute<Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute>();
             var authorizeAttribute = type.GetCustomAttribute<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>();
             DetermineAuthorization(allowAnonymousAttribute, authorizeAttribute, out authorization);
         }
 
-        private void DetermineAuthorization(MethodInfo type, out Authorization authorization)
+        private void DetermineAuthorization(MethodInfo type, out AuthorizationInfo authorization)
         {
             var allowAnonymousAttribute = type.GetCustomAttribute<Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute>();
             var authorizeAttribute = type.GetCustomAttribute<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>();
@@ -32,9 +32,9 @@ namespace Crispy.Scanner
         private void DetermineAuthorization(
             Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute allowAnonymousAttribute, 
             Microsoft.AspNetCore.Authorization.AuthorizeAttribute authorizeAttribute, 
-            out Authorization authorization)
+            out AuthorizationInfo authorization)
         {
-            authorization = new Authorization(); ;
+            authorization = new AuthorizationInfo(); ;
             if (allowAnonymousAttribute != null)
             {
                 authorization.AllowAnonymous = true;
@@ -118,7 +118,7 @@ namespace Crispy.Scanner
 
         }
 
-        public IEnumerable<Endpoint> Enumerate()
+        public IEnumerable<EndpointInfo> Enumerate()
         {
             DetermineAuthorization(controller.TypeInfo, out var controllerAuthorization);
             foreach (var method in controller.Type.GetMethods())
@@ -130,7 +130,7 @@ namespace Crispy.Scanner
                 }
                 DetermineAuthorization(method, out var methodAuthorization);
                 DetermineHttpMethodAndRoute(method, controller.Route, out var httpMethod, out var httpRoute);
-                var endpoint = new Endpoint() {
+                var endpoint = new EndpointInfo() {
                     Controller = controller,
                     MethodInfo = method,
                     Name = method.Name,
@@ -143,8 +143,8 @@ namespace Crispy.Scanner
                 // and now for the parameters
                 foreach (var methodParam in method.GetParameters())
                 {
-                    var parameter = new Parameter();
-                    parameter.info = methodParam;
+                    var parameter = new ParameterInfo();
+                    parameter.Info = methodParam;
                    
                     var fromRoute = methodParam.GetCustomAttribute<Microsoft.AspNetCore.Mvc.FromRouteAttribute>();
                     var fromQuery = methodParam.GetCustomAttribute<Microsoft.AspNetCore.Mvc.FromQueryAttribute>();
@@ -153,17 +153,17 @@ namespace Crispy.Scanner
                     if (fromRoute != null)
                     {
                         parameter.IsRoute = true;
-                        parameter.httpName = fromRoute.Name ?? methodParam.Name;
+                        parameter.HttpName = fromRoute.Name ?? methodParam.Name;
                     }
                     else  if (fromQuery != null)
                     {
                         parameter.IsQuery = true;
-                        parameter.httpName = fromQuery.Name ?? methodParam.Name;
+                        parameter.HttpName = fromQuery.Name ?? methodParam.Name;
                     }
                     else if (fromBody != null)
                     {
                         parameter.IsBody = true;
-                        parameter.httpName = null;
+                        parameter.HttpName = null;
                     }
                     else
                     {
@@ -173,20 +173,20 @@ namespace Crispy.Scanner
                             if (endpoint.HttpRoute.Contains("{" + methodParam.Name + "}"))
                             {
                                 parameter.IsRoute = true;
-                                parameter.httpName = methodParam.Name;
+                                parameter.HttpName = methodParam.Name;
                             }
                             else
                             {
                                 parameter.IsQuery = true;
-                                parameter.httpName = methodParam.Name;
+                                parameter.HttpName = methodParam.Name;
                             }
                         } else
                         {
                             parameter.IsBody = true;
-                            parameter.httpName = null;
+                            parameter.HttpName = null;
                         }
                     }
-                    parameter.jsname = methodParam.Name.LowerFirstLetter();
+                    parameter.JsName = methodParam.Name.LowerFirstLetter();
                     endpoint.Parameters.Add(parameter);
                 }
                 endpoint.ReturnType = method.ReturnType;
@@ -194,7 +194,7 @@ namespace Crispy.Scanner
             }
         }
 
-        public IEnumerable<Endpoint> ScanEndpoints() => Enumerate();
+        public IEnumerable<EndpointInfo> ScanEndpoints() => Enumerate();
         
 
 
