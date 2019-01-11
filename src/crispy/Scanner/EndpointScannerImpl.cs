@@ -2,63 +2,39 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
+using System.Linq;
 
-namespace Js2Cs
+namespace Crispy.Scanner
 {
-    internal class EndpointEnumerator
+    internal class EndpointScannerImpl
     {
-        private ControllerEnumerator.Model controller;
+        private Controller controller;
 
-        public EndpointEnumerator(ControllerEnumerator.Model controller)
+        public EndpointScannerImpl(Controller controller)
         {
             this.controller = controller;
         }
 
-        internal class Model
-        {
-            internal MethodInfo method;
-            internal string httpMehod;
-            internal string httpRoute;
-            internal AuthorizationModel authorization;
-            internal string jsname;
-            internal List<ParameterModel> parameters = new List<ParameterModel>();
-            internal Type returnType;
-        }
-
-        internal class AuthorizationModel
-        {
-            public bool AllowAnonymous, IsSigninRequired;
-            public String Roles;
-            public String Policy;
-        }
-
-        internal class ParameterModel
-        {
-            internal ParameterInfo info;
-            internal bool isRouteParameter;
-            internal string httpName;
-            internal bool isBodyParameter;
-            internal bool isQueryParameter;
-            internal string jsname;
-        }
-
-        private void DetermineAuthorization(TypeInfo type, out AuthorizationModel authorization)
+        private void DetermineAuthorization(TypeInfo type, out Authorization authorization)
         {
             var allowAnonymousAttribute = type.GetCustomAttribute<Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute>();
             var authorizeAttribute = type.GetCustomAttribute<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>();
             DetermineAuthorization(allowAnonymousAttribute, authorizeAttribute, out authorization);
         }
 
-        private void DetermineAuthorization(MethodInfo type, out AuthorizationModel authorization)
+        private void DetermineAuthorization(MethodInfo type, out Authorization authorization)
         {
             var allowAnonymousAttribute = type.GetCustomAttribute<Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute>();
             var authorizeAttribute = type.GetCustomAttribute<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>();
             DetermineAuthorization(allowAnonymousAttribute, authorizeAttribute, out authorization);
         }
 
-        private void DetermineAuthorization(Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute allowAnonymousAttribute, Microsoft.AspNetCore.Authorization.AuthorizeAttribute authorizeAttribute, out AuthorizationModel authorization)
+        private void DetermineAuthorization(
+            Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute allowAnonymousAttribute, 
+            Microsoft.AspNetCore.Authorization.AuthorizeAttribute authorizeAttribute, 
+            out Authorization authorization)
         {
-            authorization = new AuthorizationModel(); ;
+            authorization = new Authorization(); ;
             if (allowAnonymousAttribute != null)
             {
                 authorization.AllowAnonymous = true;
@@ -142,77 +118,83 @@ namespace Js2Cs
 
         }
 
-        public IEnumerable<Model> Enumerate()
+        public IEnumerable<Endpoint> Enumerate()
         {
-            DetermineAuthorization(controller.typeInfo, out var controllerAuthorization);
-            foreach (var method in controller.type.GetMethods())
+            DetermineAuthorization(controller.TypeInfo, out var controllerAuthorization);
+            foreach (var method in controller.Type.GetMethods())
             {
-                if (method.DeclaringType != controller.type)
+                if (method.DeclaringType != controller.Type)
                 {
                     // this is inherited method
                     continue;
                 }
                 DetermineAuthorization(method, out var methodAuthorization);
-                DetermineHttpMethodAndRoute(method, controller.route, out var httpMethod, out var httpRoute);
-                var model = new Model();
-                model.method = method;
-                model.jsname = method.Name.Substring(0,1).ToLowerInvariant() + method.Name.Substring(1);
-                model.httpMehod = httpMethod;
-                model.httpRoute = httpRoute;
-                model.authorization = methodAuthorization;
+                DetermineHttpMethodAndRoute(method, controller.Route, out var httpMethod, out var httpRoute);
+                var endpoint = new Endpoint() {
+                    Controller = controller,
+                    MethodInfo = method,
+                    Name = method.Name,
+                    NameCamelCase = method.Name.LowerFirstLetter(),
+                    HttpMethod = httpMethod,
+                    HttpRoute = httpRoute,
+                    Authorization = methodAuthorization
+                };
+                Console.WriteLine($"Endpoint {endpoint.Controller.Name}");
                 // and now for the parameters
-                foreach (var parameter in method.GetParameters())
+                foreach (var methodParam in method.GetParameters())
                 {
-                    var parameterModel = new ParameterModel();
-                    parameterModel.info = parameter;
+                    var parameter = new Parameter();
+                    parameter.info = methodParam;
                    
-                    var fromRoute = parameter.GetCustomAttribute<Microsoft.AspNetCore.Mvc.FromRouteAttribute>();
-                    var fromQuery = parameter.GetCustomAttribute<Microsoft.AspNetCore.Mvc.FromQueryAttribute>();
-                    var fromBody = parameter.GetCustomAttribute<Microsoft.AspNetCore.Mvc.FromBodyAttribute>();
+                    var fromRoute = methodParam.GetCustomAttribute<Microsoft.AspNetCore.Mvc.FromRouteAttribute>();
+                    var fromQuery = methodParam.GetCustomAttribute<Microsoft.AspNetCore.Mvc.FromQueryAttribute>();
+                    var fromBody = methodParam.GetCustomAttribute<Microsoft.AspNetCore.Mvc.FromBodyAttribute>();
 
                     if (fromRoute != null)
                     {
-                        parameterModel.isRouteParameter = true;
-                        parameterModel.httpName = fromRoute.Name ?? parameter.Name;
+                        parameter.IsRoute = true;
+                        parameter.httpName = fromRoute.Name ?? methodParam.Name;
                     }
                     else  if (fromQuery != null)
                     {
-                        parameterModel.isQueryParameter = true;
-                        parameterModel.httpName = fromQuery.Name ?? parameter.Name;
+                        parameter.IsQuery = true;
+                        parameter.httpName = fromQuery.Name ?? methodParam.Name;
                     }
                     else if (fromBody != null)
                     {
-                        parameterModel.isBodyParameter = true;
-                        parameterModel.httpName = null;
+                        parameter.IsBody = true;
+                        parameter.httpName = null;
                     }
                     else
                     {
-                        var t = parameter.ParameterType;
+                        var t = methodParam.ParameterType;
                         if (t.GetTypeInfo().IsPrimitive || t == typeof(Decimal) || t == typeof(String))
                         {
-                            if (model.httpRoute.Contains("{" + parameter.Name + "}"))
+                            if (endpoint.HttpRoute.Contains("{" + methodParam.Name + "}"))
                             {
-                                parameterModel.isRouteParameter = true;
-                                parameterModel.httpName = parameter.Name;
+                                parameter.IsRoute = true;
+                                parameter.httpName = methodParam.Name;
                             }
                             else
                             {
-                                parameterModel.isQueryParameter = true;
-                                parameterModel.httpName = parameter.Name;
+                                parameter.IsQuery = true;
+                                parameter.httpName = methodParam.Name;
                             }
                         } else
                         {
-                            parameterModel.isBodyParameter = true;
-                            parameterModel.httpName = null;
+                            parameter.IsBody = true;
+                            parameter.httpName = null;
                         }
                     }
-                    parameterModel.jsname = parameter.Name.Substring(0, 1).ToLowerInvariant() + parameter.Name.Substring(1);
-                    model.parameters.Add(parameterModel);
+                    parameter.jsname = methodParam.Name.LowerFirstLetter();
+                    endpoint.Parameters.Add(parameter);
                 }
-                model.returnType = method.ReturnType;
-                yield return model;
+                endpoint.ReturnType = method.ReturnType;
+                yield return endpoint;
             }
         }
+
+        public IEnumerable<Endpoint> ScanEndpoints() => Enumerate();
         
 
 

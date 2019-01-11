@@ -1,6 +1,6 @@
 
 
-# Js2Cs
+# Crispy
 
 This library makes it relatively easy to call backend functions from javascript.
 Gone are the days of worrying about http methods, urls and whatnot. 
@@ -18,17 +18,17 @@ This is most suitable for experimentation, weekend projects, school projects and
 
 ### Step 1: Generate JS for your API ###
 
-Js2Cs library project contains the JsGenerator. That's what you need. 
+Crispy library project contains the JsGenerator. That's what you need. 
 You can create an API endpoint which serves the javascript to be used in your frontend application.
 
-	using Js2Cs;
+	using Crispy;
 	using Microsoft.AspNetCore.Mvc;
 	using System.Reflection;
 
 	namespace ApiTest.Controllers
 	{
 		[Route("api/[controller]")]
-		public class Js2CsController : Controller
+		public class CrispyController : Controller
 		{
 			[HttpGet]
 			public ContentResult GetApiDefinition()
@@ -41,7 +41,7 @@ You can create an API endpoint which serves the javascript to be used in your fr
 					.UsePrettyPrint();
 
 				// get assembly of web project
-				var assembly = typeof(Js2CsController).GetTypeInfo().Assembly;
+				var assembly = typeof(CrispyController).GetTypeInfo().Assembly;
 
 				// generate some js
 				var javascript = generator.GenerateSingleFile(assembly, "ApiTest.Controllers");
@@ -95,7 +95,7 @@ That's all, we can call the backend code with `api.todo.getAll()` and `api.todo.
 	<head>
 		<meta charset="utf-8" />
 		<title>My Todo List</title>
-		<script src="api/js2cs"></script>
+		<script src="api/crispy"></script>
 	</head>
 	<body>
 		<h1>My Todo List:</h1>
@@ -140,7 +140,7 @@ Don't forget to add `app.UseStaticFiles();` into your `Startup.cs`.
 This project is still at the very beginning so a lot of features are missing.
 Plans are to:
 
-	- framework to expose C# methods via Js2Cs instead of regular API controllers, 
+	- framework to expose C# methods via Crispy instead of regular API controllers, 
 	this way you don't need to write Http controllers anymore, just regular C# classes.
 	- support both .net Core and classic .net
 	- role based api generation, only show functions that are accessible from users role

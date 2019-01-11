@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ApiTest.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -29,14 +30,19 @@ namespace ApiTest
         {
             // Add framework services.
             services.AddMvc();
+            // Add application services.
+            services.AddSingleton<CommandService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+            Console.WriteLine("Doingstuff!");
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
-
+            if (env.IsDevelopment()){
+                app.UseDeveloperExceptionPage();
+            }
             app.UseStaticFiles();
             app.UseMvc();
         }

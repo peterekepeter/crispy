@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Command runner...</title>
+    <!-- this is where the magic happens. -->
+    <script src="api/crispy"></script>
+</head>
+<body>
+    <script>
+        // entry point into the application
+        async function main(){
+            function reportInitError(){
+                const initFailedMessage = "It looks like api didn't properly load, check logs, exiting...";
+                document.write(initFailedMessage);
+                console.error(initFailedMessage);
+            }
+            try{
+                if (typeof(api.command.getNextCommand) != 'function'){
+                    reportInitError();
+                    return null;
+                }
+            }
+            catch(error){
+                reportInitError();
+                throw error;
+            }
+            if (api == null){
+            }
+            await commandLoop();
+        }
+
+        // command loop processes commands from backend
+        let connected = true;
+        async function commandLoop(){
+            try{
+                if (connected == false){ console.info("reconnecting"); }
+                var command = await api.command.getNextCommand();
+                if (connected == false){ 
+                    console.info("connection established");
+                    connected = true;
+                }
+            }
+            catch(exception)
+            {
+                if (connected == true){
+                    connected = false;
+                    console.info("seems to be disconnected");
+                }
+                console.error(exception);
+                setTimeout(main, 100);
+                return;
+            }
+            var success = false;
+            try {
+                var result = eval(command.js);
+                if (result != null && result.then != null){
+                    result = await result;
+                }
+                if (typeof result !== 'string') 
+                { 
+                    if (result === undefined)
+                    {
+                        result = 'undefined';
+                    }
+                    if (typeof result === 'object'){
+                        result = JSON.stringify(result);
+                    }
+                    else 
+                    {
+                        result = ''+result;
+                    }
+                }
+                success = true;
+            }
+            catch (exception){
+                console.error(exception);   
+                var result = exception;
+            }
+            try{
+                await api.command.submitResult(command.id, success, result);
+            } 
+            catch
+            {
+                console.warn("Might have failed submitting result.",result);
+            }
+            setTimeout(main, 1);
+        }
+        document.addEventListener('DOMContentLoaded', main);
+    </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-﻿namespace Js2Cs
+﻿namespace Crispy
 {
     /// <summary> Defines the varios supported module types. </summary>
     public enum ModuleLoaderType

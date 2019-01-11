@@ -1,4 +1,4 @@
-﻿namespace Js2Cs
+﻿namespace Crispy
 {
     /// <summary> The type of library to use. </summary>
     public enum HttpImplementation
