@@ -94,7 +94,6 @@ namespace Crispy
             return this;
         }
 
-
         /// <summary> Generate a single blob </summary>
         public string GenerateSingleFile(Assembly targetAssembly, String targetNamespace)
         {
@@ -163,7 +162,7 @@ namespace Crispy
             }
         }
 
-        private static void GenerateController(StringBuilder sb, Controller controller)
+        private static void GenerateController(StringBuilder sb, ControllerInfo controller)
         {
             // enumarates endpoits in controller
             var endpoints = new Scanner.EndpointScannerImpl(controller);
@@ -173,7 +172,7 @@ namespace Crispy
             }
         }
 
-        private static void GenerateEndpoint(StringBuilder sb, Endpoint endpoint)
+        private static void GenerateEndpoint(StringBuilder sb, EndpointInfo endpoint)
         {
             sb.Append($"\t\t{endpoint.NameCamelCase}: function(");
             // generate function vars
@@ -181,7 +180,7 @@ namespace Crispy
             foreach (var parameter in endpoint.Parameters)
             {
                 sb.Append(separator);
-                sb.Append(parameter.jsname);
+                sb.Append(parameter.JsName);
                 separator = ", ";
             }
             // continue function
@@ -192,8 +191,8 @@ namespace Crispy
             {
                 if (parameter.IsRoute)
                 {
-                    var templateName = "{" + parameter.httpName + "}";
-                    httpRoute = httpRoute.Replace(templateName, "\" + encodeURIComponent(" + parameter.jsname + ") + \"");
+                    var templateName = "{" + parameter.HttpName + "}";
+                    httpRoute = httpRoute.Replace(templateName, "\" + encodeURIComponent(" + parameter.JsName + ") + \"");
                 }
             }
             // resolve query params
@@ -202,14 +201,14 @@ namespace Crispy
             {
                 if (parameter.IsQuery)
                 {
-                    httpRoute += separator + parameter.httpName + "=\" + encodeURIComponent(" + parameter.jsname + ") + \"";
+                    httpRoute += separator + parameter.HttpName + "=\" + encodeURIComponent(" + parameter.JsName + ") + \"";
                     separator = "&";
                 }
             }
             // write route
             sb.Append(httpRoute + "\", ");
             // find body param
-            Parameter bodyParam = null;
+            ParameterInfo bodyParam = null;
             foreach (var parameter in endpoint.Parameters)
             {
                 if (parameter.IsBody)
@@ -230,7 +229,7 @@ namespace Crispy
             }
             else
             {
-                sb.Append(bodyParam.jsname);
+                sb.Append(bodyParam.JsName);
             }
 
             sb.Append(", ");
