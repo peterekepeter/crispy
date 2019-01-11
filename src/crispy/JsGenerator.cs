@@ -10,50 +10,48 @@ namespace Crispy
     public partial class JsGenerator
     {
         private static string boilerplatePromise = @"
-                function http (method, url, data, formatter) {
-                // create a promise
-                return new Promise(function (resolve, reject) {
-                    var request = new XMLHttpRequest();
-                    request.open(method, url, true);
-                    request.setRequestHeader('Accept', 'application/json');
-                    request.setRequestHeader('X-Request-From', 'apicall');
-                    var body = null;
-                    if (!(method === 'GET' || method === 'DELETE')) {
-                        if (typeof data === 'object') {
-                            request.setRequestHeader('Content-Type', 'application/json');
-                            body = JSON.stringify(data);
-                        } else {
-                            request.setRequestHeader('Content-Type', 'application/json');
-                            body = '\'' + data.replace(/'/g, '\\\'') + '\'';
-                        }
-                    }
-                    request.onload = function () {
-                        var data = null;
-                        if (request.status >= 200 && request.status < 400) {
-                            if (request.responseText !== null && request.responseText.length > 0 && formatter !== undefined) {
-                                data = formatter(request.responseText);
-                            }
-                            resolve(data, request);
-                        } else {
-                            if (request.responseText !== null && request.responseText.length > 0) {
-                                data = JSON.parse(request.responseText);
-                            }
-                            reject(data, request);
-                        }
-                    };
-                    request.onerror = function () {
-                        reject({ message: 'Failed to connect to server.' });
-                    };
-                    if (body === null) {
-                        request.send();
+        function http (method, url, data, formatter) {
+            return new Promise(function (resolve, reject) {
+                var request = new XMLHttpRequest();
+                request.open(method, url, true);
+                request.setRequestHeader('Accept', 'application/json');
+                request.setRequestHeader('X-Request-From', 'crispy');
+                var body = null;
+                if (!(method === 'GET' || method === 'DELETE')) {
+                    if (typeof data === 'object') {
+                        request.setRequestHeader('Content-Type', 'application/json');
+                        body = JSON.stringify(data);
                     } else {
-                        request.send(body);
+                        request.setRequestHeader('Content-Type', 'application/json');
+                        body = '\'' + data.replace(/'/g, '\\\'') + '\'';
                     }
-                });
-            }
-            function DateFormatter(value) { return new Date(value); }
+                }
+                request.onload = function () {
+                    var data = null;
+                    if (request.status >= 200 && request.status < 400) {
+                        if (request.responseText !== null && request.responseText.length > 0 && formatter !== undefined) {
+                            data = formatter(request.responseText);
+                        }
+                        resolve(data, request);
+                    } else {
+                        if (request.responseText !== null && request.responseText.length > 0) {
+                            data = JSON.parse(request.responseText);
+                        }
+                        reject(data, request);
+                    }
+                };
+                request.onerror = function () {
+                    reject({ message: 'Failed to connect to server.' });
+                };
+                if (body === null) {
+                    request.send();
+                } else {
+                    request.send(body);
+                }
+            });
+        }
+        function DateFormatter(value) { return new Date(value); }
 ";
-
 
         private ModuleLoaderType ModuleType;
         private string VariableName;
@@ -132,7 +130,9 @@ namespace Crispy
                     sb.AppendLine("});");
                     break;
                 case ModuleLoaderType.CommonJs:
+                    break;
                 case ModuleLoaderType.GlobalVariable:
+                    sb.AppendLine("})();");
                     break;
                 case ModuleLoaderType.Es6:
                     sb.AppendLine("\texport default api;");

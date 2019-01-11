@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2</TargetFramework>
     <PackageId>Crispy</PackageId>
+    <RootNamespace>Crispy</RootNamespace>
     <Authors>Eke Péter</Authors>
     <Description>Crispy allows web applications to easily transtion between frontend and backend code. It does this by generating javascript wrappers for C# code. It can be used with standard mvc controllers. Currently only dotnet core is supported.</Description>
     <RepositoryType>Git</RepositoryType>
@@ -10,9 +11,7 @@
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
     <Version>0.1.0</Version>
-  </PropertyGroup>
-
-  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DocumentationFile>/bin/Crispy.xml</DocumentationFile>
   </PropertyGroup>
 

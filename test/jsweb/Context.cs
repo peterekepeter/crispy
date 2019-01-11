@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using ApiTest.Services;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace Test.JsWeb
 {
@@ -87,13 +88,44 @@ namespace Test.JsWeb
             if (File.Exists(path)){
                 WriteLine("Found a browser!");
             }
+            var finalUrl = $"{Url}command.html";
             var info = new ProcessStartInfo(){
                 FileName = path,
-                Arguments = $"{Url}command.html"
+                Arguments = finalUrl
             };
-            
-            var process = Process.Start(info);
+
+            WriteLine($"Launching {finalUrl}");
+            OpenBrowser(finalUrl);
             return;
+        }
+
+        public static void OpenBrowser(string url)
+        {
+            try
+            {
+                Process.Start(url);
+            }
+            catch
+            {
+                // hack because of this: https://github.com/dotnet/corefx/issues/10361
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    url = url.Replace("&", "^&");
+                    Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    Process.Start("xdg-open", url);
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    Process.Start("open", url);
+                }
+                else
+                {
+                    throw;
+                }
+            }
         }
     }
 

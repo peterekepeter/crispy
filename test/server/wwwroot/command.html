@@ -2,15 +2,37 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>My Todo List</title>
+    <title>Command runner...</title>
     <!-- this is where the magic happens. -->
     <script src="api/crispy"></script>
 </head>
 <body>
     <script>
-        let connected = true;
-        // render todo items from C#
+        // entry point into the application
         async function main(){
+            function reportInitError(){
+                const initFailedMessage = "It looks like api didn't properly load, check logs, exiting...";
+                document.write(initFailedMessage);
+                console.error(initFailedMessage);
+            }
+            try{
+                if (typeof(api.command.getNextCommand) != 'function'){
+                    reportInitError();
+                    return null;
+                }
+            }
+            catch(error){
+                reportInitError();
+                throw error;
+            }
+            if (api == null){
+            }
+            await commandLoop();
+        }
+
+        // command loop processes commands from backend
+        let connected = true;
+        async function commandLoop(){
             try{
                 if (connected == false){ console.info("reconnecting"); }
                 var command = await api.command.getNextCommand();
@@ -64,9 +86,7 @@
             }
             setTimeout(main, 1);
         }
-        // initialize
-        console.log("init");
-        main();
+        document.addEventListener('DOMContentLoaded', main);
     </script>
 </body>
 </html>
