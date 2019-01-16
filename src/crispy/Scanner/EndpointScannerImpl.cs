@@ -60,62 +60,20 @@ namespace Crispy.Scanner
         {
             httpRoute = httpRouteRoot;
             httpMethod = "?";
+            String routeTemplate = null;
 
-            var httpGet = method.GetCustomAttribute<Microsoft.AspNetCore.Mvc.HttpGetAttribute>();
-            if (httpGet != null)
-            {
-                httpMethod = "GET";
-                var template = httpGet.Template;
-                if (!String.IsNullOrWhiteSpace(template))
-                {
-                    httpRoute += "/" + template;
-                }
+            var httpMethods = method.GetCustomAttributes<Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute>();
+            foreach (var attribute in httpMethods){
+                // TODO add a warning over here
+                httpMethod = attribute.HttpMethods.First();
+                routeTemplate = attribute.Template;
+                break;
             }
 
-            var httpPost = method.GetCustomAttribute<Microsoft.AspNetCore.Mvc.HttpPostAttribute>();
-            if (httpPost != null)
+            if (!String.IsNullOrWhiteSpace(routeTemplate))
             {
-                httpMethod = "POST";
-                var template = httpPost.Template;
-                if (!String.IsNullOrWhiteSpace(template))
-                {
-                    httpRoute += "/" + template;
-                }
+                httpRoute += "/" + routeTemplate;
             }
-
-            var httpPut = method.GetCustomAttribute<Microsoft.AspNetCore.Mvc.HttpPutAttribute>();
-            if (httpPut != null)
-            {
-                httpMethod = "PUT";
-                var template = httpPut.Template;
-                if (!String.IsNullOrWhiteSpace(template))
-                {
-                    httpRoute += "/" + template;
-                }
-            }
-
-            var httpPatch = method.GetCustomAttribute<Microsoft.AspNetCore.Mvc.HttpPatchAttribute>();
-            if (httpPatch != null)
-            {
-                httpMethod = "PATCH";
-                var template = httpPatch.Template;
-                if (!String.IsNullOrWhiteSpace(template))
-                {
-                    httpRoute += "/" + template;
-                }
-            }
-
-            var httpDelete = method.GetCustomAttribute<Microsoft.AspNetCore.Mvc.HttpDeleteAttribute>();
-            if (httpDelete != null)
-            {
-                httpMethod = "DELETE";
-                var template = httpDelete.Template;
-                if (!String.IsNullOrWhiteSpace(template))
-                {
-                    httpRoute += "/" + template;
-                }
-            }
-
         }
 
         public IEnumerable<EndpointInfo> Enumerate()

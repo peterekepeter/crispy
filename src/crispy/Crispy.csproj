@@ -10,7 +10,7 @@
     <PackageTags>javascript c# frontend backend fullstack api promise</PackageTags>
     <IsPackable>true</IsPackable>
     <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
-    <Version>0.3.4</Version>
+    <Version>0.3.5</Version>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DocumentationFile>/bin/Crispy.xml</DocumentationFile>
   </PropertyGroup>

@@ -92,7 +92,7 @@ namespace Test.Scanner
             => Crispy.EndpointScanner.Scan<ControllerWithStaticMethod.SomethingController>();
 
         [TestMethod]
-        public void ControllerShouldHaveOneMethod() => ScannedController.Count().Should().Be(1);
+        public void ShouldHaveOneMethod() => ScannedController.Count().Should().Be(1);
 
         [TestMethod]
         public void NonStaticMethodFound() => ScannedController
@@ -103,5 +103,25 @@ namespace Test.Scanner
         public void StaticMethodNotFound() => ScannedController
             .FirstOrDefault(endpoint => endpoint.Name == "StaticGetAll")
             .Should().BeNull("because static method must NOT be detected");
+    }
+
+    [TestClass] public class ControllerWithMultipleGets {
+    
+        public class SomethingWithMultipleAttributesController : Controller
+        {
+            [HttpGet("test/something")]
+            [HttpGet("api/something")]
+            public String[] GetAllThings([FromQuery] String filter) => null;
+        }
+
+        internal static IEnumerable<EndpointInfo> ScannedController 
+            => Crispy.EndpointScanner.Scan<SomethingWithMultipleAttributesController>();
+        internal Action Scanning = () => ScannedController.Count();
+
+        [TestMethod]
+        public void ScanningShouldThrow() => Scanning.Should().NotThrow();
+
+        [TestMethod]
+        public void ShouldHaveOneMedthod() => ScannedController.Count().Should().Be(1);
     }
 }
