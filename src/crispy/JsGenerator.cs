@@ -219,7 +219,7 @@ namespace Crispy
                     }
                     else
                     {
-                        throw new ArgumentException("invalid controller, it should only have 1 body param");
+                        throw new CrispyException($"Invalid controller method {endpoint.Controller.Type.Name}.{endpoint.Name}, it can only have 1 body param but there are at least 2.");
                     }
                 }
             }

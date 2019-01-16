@@ -4,6 +4,7 @@ using Crispy;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Test.Scanner.BadPostController;
 using Test.Scanner.Controllers;
 
 namespace Test.Scanner
@@ -15,6 +16,7 @@ namespace Test.Scanner
             [HttpGet] public string GetAllValues() => "";
         }
     }
+
 
     [TestClass]
     public class JsGeneratorTest
@@ -45,6 +47,5 @@ namespace Test.Scanner
 
         [TestMethod]
         public void RouteInInJs() => GeneratedCode.Should().Contain("api/custom-route");
-
     }
 }

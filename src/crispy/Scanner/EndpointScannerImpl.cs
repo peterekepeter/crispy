@@ -139,17 +139,23 @@ namespace Crispy.Scanner
                     HttpRoute = httpRoute,
                     Authorization = methodAuthorization
                 };
-                Console.WriteLine($"Endpoint {endpoint.Controller.Name}");
+
                 // and now for the parameters
                 foreach (var methodParam in method.GetParameters())
                 {
+                    var fromSerivces = methodParam.GetCustomAttribute<Microsoft.AspNetCore.Mvc.FromServicesAttribute>();
+
+                    if (fromSerivces != null){
+                        continue; // skip this param
+                    }
+
                     var parameter = new ParameterInfo();
                     parameter.Info = methodParam;
-                   
+
                     var fromRoute = methodParam.GetCustomAttribute<Microsoft.AspNetCore.Mvc.FromRouteAttribute>();
                     var fromQuery = methodParam.GetCustomAttribute<Microsoft.AspNetCore.Mvc.FromQueryAttribute>();
                     var fromBody = methodParam.GetCustomAttribute<Microsoft.AspNetCore.Mvc.FromBodyAttribute>();
-
+                    
                     if (fromRoute != null)
                     {
                         parameter.IsRoute = true;
