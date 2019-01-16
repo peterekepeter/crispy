@@ -128,6 +128,10 @@ namespace Crispy.Scanner
                     // this is inherited method
                     continue;
                 }
+                if (method.IsStatic){
+                    // filter out static methods
+                    continue;
+                }
                 DetermineAuthorization(method, out var methodAuthorization);
                 DetermineHttpMethodAndRoute(method, controller.Route, out var httpMethod, out var httpRoute);
                 var endpoint = new EndpointInfo() {

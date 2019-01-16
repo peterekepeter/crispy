@@ -74,4 +74,34 @@ namespace Test.Scanner
             .Find(param => param.JsName == "serviceA").Should()
             .BeNull("because parameters with FromServiceAttribute should not be detected as parameters.");
     }
+
+    namespace ControllerWithStaticMethod
+    {
+        [Authorize(Roles = "Admin")] 
+        public class SomethingController : Controller
+        {
+            public String[] GetAll([FromQuery] String filter) => StaticGetAll(filter);
+
+            public static String[] StaticGetAll(String filter) => null;
+        }
+    }
+    
+    [TestClass] public class ControllerWithStaticMethodnTest {
+        
+        internal IEnumerable<EndpointInfo> ScannedController
+            => Crispy.EndpointScanner.Scan<ControllerWithStaticMethod.SomethingController>();
+
+        [TestMethod]
+        public void ControllerShouldHaveOneMethod() => ScannedController.Count().Should().Be(1);
+
+        [TestMethod]
+        public void NonStaticMethodFound() => ScannedController
+            .FirstOrDefault(endpoint => endpoint.Name == "GetAll")
+            .Should().NotBeNull("because non static method must be detected");
+
+        [TestMethod]
+        public void StaticMethodNotFound() => ScannedController
+            .FirstOrDefault(endpoint => endpoint.Name == "StaticGetAll")
+            .Should().BeNull("because static method must NOT be detected");
+    }
 }
