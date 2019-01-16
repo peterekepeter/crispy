@@ -70,9 +70,7 @@ namespace Crispy.Scanner
                 ? name
                 : name.Substring(0, name.LastIndexOf(controllerSuffix));
             var nameCamel = namePascal.LowerFirstLetter();
-            var routeString = route == null 
-                ? "/" + name.ToLowerInvariant() 
-                : "/" + route.Template.Replace("[controller]", nameCamel);
+            var routeString = route == null ? null : "/" + route.Template.Replace("[controller]", nameCamel);
             return new ControllerInfo() {
                 Type = type,
                 Name = namePascal,

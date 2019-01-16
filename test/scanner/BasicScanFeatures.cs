@@ -2,60 +2,51 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using FluentAssertions;
 using System.Linq;
 using System.Collections.Generic;
+using Crispy;
+using System;
 
 namespace Test.Scanner
 {
     [TestClass]
     public class BasicEndpointScanFeatures
     {
-        [TestMethod]
-        public void CanScanController()
-        {
-            var endpoints = Crispy.EndpointScanner.Scan<Mock.BasicController>();
-            endpoints.Should().HaveCount(1);
-        }
+        internal static IEnumerable<EndpointInfo> ScanResult => EndpointScanner.Scan<Mock.BasicController>();
 
-        internal Crispy.EndpointInfo Endpoint
-            => Crispy.EndpointScanner.Scan<Mock.BasicController>().Single();
+        internal static Action Scanning = () => ScanResult.Count();
+        
+        [TestMethod] public void CanScanController() => Scanning.Should()
+            .NotThrow("because it is a simple & valid controller");
 
-        [TestMethod]
-        public void EnpdointHasController()
-            => Endpoint.Controller.Should().NotBeNull();
+        internal static Crispy.EndpointInfo Endpoint => ScanResult.Single();
 
-        [TestMethod]
-        public void EnpdointHasControllerName()
-            => Endpoint.Controller.Name.Should().Be("Basic");
+        [TestMethod] public void EnpdointHasController() => Endpoint.Controller.Should()
+            .NotBeNull("because each endpoint should belongs to a controller");
 
-        [TestMethod]
-        public void EnpdointHasControllerNameJs()
-            => Endpoint.Controller.NameCamelCase.Should().Be("basic");
+        [TestMethod] public void EnpdointHasControllerName() => Endpoint.Controller.Name.Should()
+            .Be("Basic", "because it should be as it's named in C#");
 
-        [TestMethod]
-        public void HasControllerRoute()
-            => Endpoint.Controller.Route.Should().Be("/api/basic");
+        [TestMethod] public void EnpdointHasControllerNameJs() => Endpoint.Controller.NameCamelCase.Should()
+            .Be("basic", "becase it should follow JavaScript conventions");
 
-        [TestMethod]
-        public void HttpMethodIsGet()
-            => Endpoint.HttpMethod.Should().Be("GET");
+        [TestMethod] public void HasControllerRoute() => Endpoint.Controller.Route.Should()
+            .Be("/api/basic", "because that's how it's defined on the controller");
 
-        [TestMethod]
-        public void RoutShouldBeAsExpected()
-            => Endpoint.HttpRoute.Should().Be("/api/basic");
+        [TestMethod] public void HttpMethodIsGet() => Endpoint.HttpMethod.Should()
+            .Be("GET", "because that's how it's defined by the HttpGetAttribute on the method");
 
-        [TestMethod]
-        public void ThereShouldBeNoParameters()
-            => Endpoint.Parameters.Should().BeEmpty();
+        [TestMethod] public void RoutShouldBeAsExpected() => Endpoint.HttpRoute.Should()
+            .Be("/api/basic", "because the endpoint route extends the controller route");
+
+        [TestMethod] public void ThereShouldBeNoParameters() => Endpoint.Parameters.Should()
+            .BeEmpty("because the controller method has no parameters");
             
-        [TestMethod]
-        public void EndpointHasPascalCaseName()
-            => Endpoint.Name.Should().Be("GetValues");
+        [TestMethod] public void EndpointHasPascalCaseName() => Endpoint.Name.Should()
+            .Be("GetValues", "because it should reflect the C# naming");
 
-        [TestMethod]
-        public void EndpointHasCamelCaseName()
-            => Endpoint.NameCamelCase.Should().Be("getValues");
+        [TestMethod] public void EndpointHasCamelCaseName() => Endpoint.NameCamelCase.Should()
+            .Be("getValues", "becase it should follow JavaScript conventions");
 
-        [TestMethod]
-        public void ReturnTypeIsListOfStrings()
-            => Endpoint.ReturnType.Should().Be(typeof(List<string>));
+        [TestMethod] public void ReturnTypeIsListOfStrings() => Endpoint.ReturnType.Should()
+            .Be(typeof(List<string>), "because that's the return type in C# and it should be detected");
     }
 }

@@ -59,7 +59,7 @@ namespace Crispy.Scanner
             out String httpRoute)
         {
             httpRoute = httpRouteRoot;
-            httpMethod = "?";
+            httpMethod = null;
             String routeTemplate = null;
 
             var httpMethods = method.GetCustomAttributes<Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute>();
