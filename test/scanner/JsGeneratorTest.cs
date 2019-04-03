@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Crispy;
 using FluentAssertions;
@@ -17,35 +19,56 @@ namespace Test.Scanner
         }
     }
 
-
     [TestClass]
     public class JsGeneratorTest
     {
-        Type TargetType;
-        Assembly ThisAssembly;
-        string GeneratedCode;
 
-        public JsGeneratorTest(){
-            TargetType = typeof(SomeValueController);
-            Assembly ThisAssembly = TargetType.Assembly;
-            GeneratedCode = new JsGenerator()
+        [TestMethod] [JsImplementation.All]
+        public void SomeCodeIsGenerated(string js) => js.Should().NotBeNullOrWhiteSpace();
+
+        [TestMethod] [JsImplementation.All]
+        public void ControllerNameIsInJs(string js) => js.Should().Contain("api.someValue");
+
+        [TestMethod] [JsImplementation.All]
+        public void ValueNameIsInJs(string js) => js.Should().Contain("getAllValues");
+
+        [TestMethod] [JsImplementation.All]
+        public void HttpMethodIsInJs(string js) => js.Should().Contain("GET");
+
+        [TestMethod] [JsImplementation.All]
+        public void RouteInInJs(string js) => js.Should().Contain("api/custom-route");
+
+        [TestMethod] [JsImplementation.Xhr]
+        public void HasDefaultHttpCode(string js) => js.Should().Contain("new XMLHttpRequest()");
+
+        [TestMethod] [JsImplementation.Custom]
+        public void HasCustomCode(string js) => js.Should().Contain("console.info(");
+
+    }
+
+    internal class JsImplementation : Attribute, ITestDataSource
+    {
+        internal class All : JsImplementation { internal All() : base(DefaultHttp, CustomHttp) { } }
+        internal class Xhr : JsImplementation { internal Xhr() : base(DefaultHttp) { } }
+        internal class Custom : JsImplementation { internal Custom() : base(CustomHttp) { } }
+
+        private static Type TargetType = typeof(SomeValueController);
+        private static Assembly TargetAssembly = TargetType.Assembly;
+        private static string DefaultHttp = new JsGenerator()
                 .UseModuleType(ModuleLoaderType.GlobalVariable)
-                .GenerateSingleFile(ThisAssembly, "Test.Scanner.Controllers");
-        }
-        
-        [TestMethod]
-        public void SomeCodeIsGenerated() => GeneratedCode.Should().NotBeNullOrWhiteSpace();
+                .GenerateSingleFile(TargetAssembly, "Test.Scanner.Controllers");
 
-        [TestMethod]
-        public void ControllerNameIsInJs() => GeneratedCode.Should().Contain("api.someValue");
+        private static string CustomHttp = new JsGenerator()
+                .UseModuleType(ModuleLoaderType.Es6)
+                .UseHttpImplementation("function http(){ console.info(...arguments); }")
+                .GenerateSingleFile(TargetAssembly, "Test.Scanner.Controllers");
 
-        [TestMethod]
-        public void ValueNameIsInJs() => GeneratedCode.Should().Contain("getAllValues");
+        private List<object[]> data;
 
-        [TestMethod]
-        public void HttpMethodIsInJs() => GeneratedCode.Should().Contain("GET");
+        private JsImplementation(params string[] list) => data = list.Select(str => new object[] { str }).ToList();
 
-        [TestMethod]
-        public void RouteInInJs() => GeneratedCode.Should().Contain("api/custom-route");
+        public IEnumerable<object[]> GetData(MethodInfo methodInfo) => data;
+
+        public string GetDisplayName(MethodInfo methodInfo, object[] data) => data[0].ToString();
     }
 }

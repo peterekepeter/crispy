@@ -9,7 +9,7 @@ namespace Crispy
     /// <summary> Generates the JavaScript code necessary for the API. </summary>
     public partial class JsGenerator
     {
-        private static string boilerplatePromise = @"
+        private static readonly string XhrBoilerplate = @"
         function http (method, url, data, formatter) {
             return new Promise(function (resolve, reject) {
                 var request = new XMLHttpRequest();
@@ -50,12 +50,15 @@ namespace Crispy
                 }
             });
         }
+";
+
+        private static readonly string DateFormatterBoilerplate = @"
         function DateFormatter(value) { return new Date(value); }
 ";
 
         private ModuleLoaderType ModuleType;
         private string VariableName;
-        private HttpImplementation Boilerplate;
+        private string JavascriptHttpImplementation = XhrBoilerplate;
         private bool prettyPrint;
         private static Regex uglifyRegex = new Regex(@"(?:\/\/[^\n]*\n\s*|\/\*.*?\*\/\s*|\s+)", RegexOptions.Singleline | RegexOptions.CultureInvariant | RegexOptions.Compiled); 
 
@@ -66,6 +69,16 @@ namespace Crispy
             VariableName = "api"; 
         }
         
+        /// <summary> Provide a custom function that makes the http request. </summary>
+        /// <param name="javascriptFunction">Example: 
+        /// "function http (method, url, requestData, responseFormatter) { }" - should be javascript code
+        /// which defines this function. </param>
+        public JsGenerator UseHttpImplementation(string javascriptFunction) 
+        {
+            this.JavascriptHttpImplementation = javascriptFunction;
+            return this;
+        }
+
         /// <summary> Will pretty print the javascript, useful for debugging. </summary>
         public JsGenerator UsePrettyPrint(bool value=true)
         {
@@ -83,7 +96,9 @@ namespace Crispy
         /// <summary> Specify how the JS lib makes the requests </summary>
         public JsGenerator UseHttpImplementation(HttpImplementation imp)
         {
-            this.Boilerplate = imp;
+            switch (imp){
+                case HttpImplementation.Xhr: JavascriptHttpImplementation = XhrBoilerplate; break;
+            }
             return this;
         }
         
@@ -104,7 +119,7 @@ namespace Crispy
             var sb = new StringBuilder();
 
             GenerateHeader(sb);
-            sb.AppendLine(boilerplatePromise);
+            sb.AppendLine(JavascriptHttpImplementation);
             foreach (var controller in controllerScanner.ScanForControllers())
             {
                 sb.AppendLine($"\t{this.VariableName}.{controller.NameCamelCase} = {{");
