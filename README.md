@@ -39,6 +39,7 @@ namespace ApiTest.Controllers
 				// and configure it
 				.UseModuleType(ModuleLoaderType.GlobalVariable)
 				.UseVariableName("api")
+				// .UseTypescript(new TsOptions()) // uncomment to generate types
 				.UsePrettyPrint();
 
 			// get assembly of web project
