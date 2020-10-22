@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace Crispy
 {
@@ -60,7 +62,9 @@ namespace Crispy
         private string VariableName;
         private string JavascriptHttpImplementation = XhrBoilerplate;
         private bool prettyPrint;
-        private static Regex uglifyRegex = new Regex(@"(?:\/\/[^\n]*\n\s*|\/\*.*?\*\/\s*|\s+)", RegexOptions.Singleline | RegexOptions.CultureInvariant | RegexOptions.Compiled); 
+        private static Regex uglifyRegex = new Regex(@"(?:\/\/[^\n]*\n\s*|\/\*.*?\*\/\s*|\s+)", RegexOptions.Singleline | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+
+        public bool Typescript { get; private set; }
 
         /// <summary> Generates JavaScript code. </summary>
         public JsGenerator()
@@ -93,6 +97,12 @@ namespace Crispy
             return this; 
         }
 
+        // <summary> Emit type info for parameters and returned models </summary>
+        public JsGenerator UseTypeScript(bool value=true){
+            this.Typescript = value;
+            return this;
+        }
+
         /// <summary> Specify how the JS lib makes the requests </summary>
         public JsGenerator UseHttpImplementation(HttpImplementation imp)
         {
@@ -123,7 +133,7 @@ namespace Crispy
             foreach (var controller in controllerScanner.ScanForControllers())
             {
                 sb.AppendLine($"\t{this.VariableName}.{controller.NameCamelCase} = {{");
-                GenerateController(sb, controller);
+                GenerateController(sb, controller, this.Typescript);
                 sb.AppendLine("\t};");
             }
             GenerateFooter(sb);
@@ -177,17 +187,17 @@ namespace Crispy
             }
         }
 
-        private static void GenerateController(StringBuilder sb, ControllerInfo controller)
+        private static void GenerateController(StringBuilder sb, ControllerInfo controller, bool typescript)
         {
             // enumarates endpoits in controller
             var endpoints = new Scanner.EndpointScannerImpl(controller);
             foreach (var endpoint in endpoints.Enumerate())
             {
-                GenerateEndpoint(sb, endpoint);
+                GenerateEndpoint(sb, endpoint, typescript);
             }
         }
 
-        private static void GenerateEndpoint(StringBuilder sb, EndpointInfo endpoint)
+        private static void GenerateEndpoint(StringBuilder sb, EndpointInfo endpoint, bool typescript)
         {
             sb.Append($"\t\t{endpoint.NameCamelCase}: function(");
             // generate function vars
@@ -196,6 +206,9 @@ namespace Crispy
             {
                 sb.Append(separator);
                 sb.Append(parameter.JsName);
+                if (typescript){
+                    sb.Append(": ").Append(TsGenerator.GenerateTypescriptType(parameter.Info.ParameterType));
+                }
                 separator = ", ";
             }
             // continue function
@@ -262,9 +275,7 @@ namespace Crispy
             {
                 sb.Append("DateFormatter");
             }
-            else if (endpoint.ReturnType == typeof(Int16) || endpoint.ReturnType == typeof(Int32) || endpoint.ReturnType == typeof(Int64)
-                || endpoint.ReturnType == typeof(UInt16) || endpoint.ReturnType == typeof(UInt32) || endpoint.ReturnType == typeof(UInt64)
-                || endpoint.ReturnType == typeof(Decimal) || endpoint.ReturnType == typeof(Single) || endpoint.ReturnType == typeof(Double))
+            else if (TypeHelpers.IsNumericType(endpoint.ReturnType))
             {
                 sb.Append("Number");
             }
@@ -278,7 +289,14 @@ namespace Crispy
             }
 
             // done method
-            sb.Append("); },\n");
+            sb.Append(")");
+            if (typescript){
+                sb.Append(" as ").Append(TsGenerator.GenerateTypescriptType(endpoint.ReturnType));
+            }
+            sb.Append("; },\n");
         }
+
+
+
     }
 }
