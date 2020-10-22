@@ -28,30 +28,30 @@ using System.Reflection;
 
 namespace ApiTest.Controllers
 {
-	[Route("api/[controller]")]
-	public class CrispyController : Controller
-	{
-		[HttpGet]
-		public ContentResult GetApiDefinition()
-		{
-			// create generator instance
-			var generator = new JsGenerator()
-				// and configure it
-				.UseModuleType(ModuleLoaderType.GlobalVariable)
-				.UseVariableName("api")
-				// .UseTypescript(new TsOptions()) // uncomment to generate types
-				.UsePrettyPrint();
+    [Route("api/[controller]")]
+    public class CrispyController : Controller
+    {
+        [HttpGet]
+        public ContentResult GetApiDefinition()
+        {
+            // create generator instance
+            var generator = new JsGenerator()
+                // and configure it
+                .UseModuleType(ModuleLoaderType.GlobalVariable)
+                .UseVariableName("api")
+                // .UseTypescript(new TsOptions()) // uncomment to generate types
+                .UsePrettyPrint();
 
-			// get assembly of web project
-			var assembly = typeof(CrispyController).GetTypeInfo().Assembly;
+            // get assembly of web project
+            var assembly = typeof(CrispyController).GetTypeInfo().Assembly;
 
-			// generate some js
-			var javascript = generator.GenerateSingleFile(assembly, "ApiTest.Controllers");
+            // generate some js
+            var javascript = generator.GenerateSingleFile(assembly, "ApiTest.Controllers");
 
-			// all done
-			return Content(javascript, "application/javascript");
-		}
-	}
+            // all done
+            return Content(javascript, "application/javascript");
+        }
+    }
 }
 ```
 
@@ -71,23 +71,23 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ApiTest.Controllers
 {
-	[Route("api/[controller]")]
-	public class TodoController : Controller
-	{
-		static IList<String> list = new List<String>(){ "buy milk", "do homework" };
+    [Route("api/[controller]")]
+    public class TodoController : Controller
+    {
+        static IList<String> list = new List<String>(){ "buy milk", "do homework" };
 
-		[HttpGet]
-		public IEnumerable<string> GetAll()
-		{
-			return list;
-		}
+        [HttpGet]
+        public IEnumerable<string> GetAll()
+        {
+            return list;
+        }
 
-		[HttpPost]
-		public void Add([FromBody]string value)
-		{
-			list.Add(value);
-		}
-	}
+        [HttpPost]
+        public void Add([FromBody]string value)
+        {
+            list.Add(value);
+        }
+    }
 }
 ```
 
@@ -99,41 +99,41 @@ That's all, we can call the backend code with `api.todo.getAll()` and `api.todo.
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="utf-8" />
-	<title>My Todo List</title>
-	<script src="api/crispy"></script>
+    <meta charset="utf-8" />
+    <title>My Todo List</title>
+    <script src="api/crispy"></script>
 </head>
 <body>
-	<h1>My Todo List:</h1>
-	<ul id="my-todo"></ul>
-	<form id="my-todo-add">
-		<input class="item-text" type="text" name="todoItem" value=""/>
-		<input type="submit"/>
-	</form>
-	<script>
-		// render todo items from C#
-		function reloadTodo() {
-			api.todo.getAll().then(function (data) { // get all todo items from C#
-				var container = document.querySelector('ul#my-todo');
-				container.innerHTML = ''; // clear
-				for (var i = 0; i < data.length; i++) {
-					// render each item
-					var item = document.createElement('li');
-					item.textContent = data[i];
-					container.appendChild(item);
-				}
-			});
-		}
-		// event handler for creating todo 
-		document.querySelector('form#my-todo-add').addEventListener('submit', function (event) {
-			event.preventDefault();
-			var value = event.target.querySelector('input.item-text').value;
-			api.todo.add(value).then(reloadTodo); // call C# method
-			return false;
-		});
-		// initialize
-		reloadTodo();
-	</script>
+    <h1>My Todo List:</h1>
+    <ul id="my-todo"></ul>
+    <form id="my-todo-add">
+        <input class="item-text" type="text" name="todoItem" value=""/>
+        <input type="submit"/>
+    </form>
+    <script>
+        // render todo items from C#
+        function reloadTodo() {
+            api.todo.getAll().then(function (data) { // get all todo items from C#
+                var container = document.querySelector('ul#my-todo');
+                container.innerHTML = ''; // clear
+                for (var i = 0; i < data.length; i++) {
+                    // render each item
+                    var item = document.createElement('li');
+                    item.textContent = data[i];
+                    container.appendChild(item);
+                }
+            });
+        }
+        // event handler for creating todo 
+        document.querySelector('form#my-todo-add').addEventListener('submit', function (event) {
+            event.preventDefault();
+            var value = event.target.querySelector('input.item-text').value;
+            api.todo.add(value).then(reloadTodo); // call C# method
+            return false;
+        });
+        // initialize
+        reloadTodo();
+    </script>
 </body>
 </html>
 ```
@@ -147,16 +147,16 @@ Don't forget to add `app.UseStaticFiles();` into your `Startup.cs`.
 This project is still at the very beginning so a lot of features are missing.
 Plans are to:
 
-	- framework to expose C# methods via Crispy instead of regular API controllers, 
-	this way you don't need to write Http controllers anymore, just regular C# classes.
-	- support both .net Core and classic .net
-	- role based api generation, only show functions that are accessible from users role
-	- convert DateTime to proper JS dates inside objects
-	- example codes, improve usability, offer quick ways to integrate into existing project
-	- future generator options:
-		- choice between promises or callbacks
-		- support AMD, CommonoJS or custom global mount point
-		- support for newer / older JS syntax
+    - framework to expose C# methods via Crispy instead of regular API controllers, 
+    this way you don't need to write Http controllers anymore, just regular C# classes.
+    - support both .net Core and classic .net
+    - role based api generation, only show functions that are accessible from users role
+    - convert DateTime to proper JS dates inside objects
+    - example codes, improve usability, offer quick ways to integrate into existing project
+    - future generator options:
+        - choice between promises or callbacks
+        - support AMD, CommonoJS or custom global mount point
+        - support for newer / older JS syntax
 
 
 ## How can I help
