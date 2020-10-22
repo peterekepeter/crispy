@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ApiTest.Controllers
@@ -19,6 +20,23 @@ namespace ApiTest.Controllers
         public void Add([FromBody]string value)
         {
             list.Add(value);
+        }
+
+        public enum State
+        {
+            Open = 0,
+            Closed = 1
+        }
+
+        public class HighLowTemps
+        {
+            public State CurrentState;
+        }
+
+        [HttpGet("xyz")]
+        public async Task<HighLowTemps> GetThing()
+        {
+            return new HighLowTemps{ CurrentState = State.Closed };
         }
     }
 }

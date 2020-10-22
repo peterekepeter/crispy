@@ -59,7 +59,7 @@ namespace Test.Scanner
         [TestMethod]
         public void Class_with_int_properites() => Check<ObjectProperties>(
             expected: "{ average: number, high: number, low: number }", 
-            options: new TsGenerator.Options{ Readable = true, Writeable = false });
+            options: new TsOptions{ Readable = true, Writeable = false });
 
         public class ReadWrite
         {
@@ -70,12 +70,12 @@ namespace Test.Scanner
         [TestMethod]
         public void ReadWrite_read_properties() => Check<ReadWrite>(
             expected: "{ messageCount: number }", 
-            options: new TsGenerator.Options{ Readable = true, Writeable = false });
+            options: new TsOptions{ Readable = true, Writeable = false });
 
         [TestMethod]
         public void ReadWrite_write_properties() => Check<ReadWrite>(
             expected: "{ messageSubmit: string }", 
-            options: new TsGenerator.Options{ Readable = false, Writeable = true });
+            options: new TsOptions{ Readable = false, Writeable = true });
 
         [TestMethod]
         public void ReadWrite_default_behaviour() => Check<ReadWrite>(
@@ -84,7 +84,7 @@ namespace Test.Scanner
         [TestMethod]
         public void ReadWrite_lowercasing_first_letter_disabled() => Check<ReadWrite>(
             expected: "{ MessageCount: number, MessageSubmit: string }", 
-            options: new TsGenerator.Options{ LowercaseFirstLetter = false });
+            options: new TsOptions{ LowercaseFirstLetter = false });
 
         public class ObjectMembers
         {
@@ -102,23 +102,60 @@ namespace Test.Scanner
         [TestMethod]
         public void ObjectMembers_exclude_properties() => Check<ObjectMembers>(
             expected: "{ average: number }",
-            new TsGenerator.Options{ Properties = false });
+            new TsOptions{ Properties = false });
 
         [TestMethod]
         public void ObjectMembers_explucde_fields() => Check<ObjectMembers>(
             expected: "{ computed: number, property: number }",
-            new TsGenerator.Options{ Fields = false });
+            new TsOptions{ Fields = false });
 
         [TestMethod]
         public void ObjectMembers_non_public() => Check<ObjectMembers>(
             expected: "{ internal: number, _private: number }",
-            new TsGenerator.Options{ NonPublic = true, Public = false });
-           
-        private void Check<T>(string expected, TsGenerator.Options options = null){
+            new TsOptions{ NonPublic = true, Public = false });
+
+        public class SubObject
+        {
+            public int Value;
+        }
+
+        public class CompositeObject
+        {
+            public int Root;
+            public SubObject Child;
+        }
+
+        [TestMethod]
+        public void Object_hierarchy() => Check<CompositeObject>("{ root: number, child: { value: number } }");
+
+        public enum State
+        {
+            Open = 0,
+            Closed = 1
+        }
+
+        public class ObjectWithEnum
+        {
+            public int Value;
+            public State State;
+        }
+
+        
+        [TestMethod]
+        public void Enum_member_default() => Check<ObjectWithEnum>(
+            expected: "{ value: number, state: 'Open' | 'Closed' }",
+            options: new TsOptions{ EnumNumberValues = false });
+
+        [TestMethod]
+        public void Enum_member_numbers() => Check<ObjectWithEnum>(
+            expected: "{ value: number, state: 0 | 1 }", 
+            options: new TsOptions{ EnumNumberValues = true });
+
+        private void Check<T>(string expected, TsOptions options = null){
             Check(typeof(T), expected, options);
         }
 
-        private void Check(Type type, string expected, TsGenerator.Options options = null){
+        private void Check(Type type, string expected, TsOptions options = null){
             TsGenerator.GenerateTypescriptType(type, options).Should().Be(expected);
         }
     }

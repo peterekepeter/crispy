@@ -64,7 +64,7 @@ namespace Crispy
         private bool prettyPrint;
         private static Regex uglifyRegex = new Regex(@"(?:\/\/[^\n]*\n\s*|\/\*.*?\*\/\s*|\s+)", RegexOptions.Singleline | RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
-        public bool Typescript { get; private set; }
+        private TsOptions TsOptions;
 
         /// <summary> Generates JavaScript code. </summary>
         public JsGenerator()
@@ -99,7 +99,13 @@ namespace Crispy
 
         // <summary> Emit type info for parameters and returned models </summary>
         public JsGenerator UseTypeScript(bool value=true){
-            this.Typescript = value;
+            this.TsOptions = value ? new TsOptions() : null;
+            return this;
+        }
+
+        // <summary> Emit type info with the given options </summary>
+        public JsGenerator UseTypeScript(TsOptions options){
+            this.TsOptions = options;
             return this;
         }
 
@@ -133,7 +139,7 @@ namespace Crispy
             foreach (var controller in controllerScanner.ScanForControllers())
             {
                 sb.AppendLine($"\t{this.VariableName}.{controller.NameCamelCase} = {{");
-                GenerateController(sb, controller, this.Typescript);
+                GenerateController(sb, controller, this.TsOptions);
                 sb.AppendLine("\t};");
             }
             GenerateFooter(sb);
@@ -187,17 +193,17 @@ namespace Crispy
             }
         }
 
-        private static void GenerateController(StringBuilder sb, ControllerInfo controller, bool typescript)
+        private static void GenerateController(StringBuilder sb, ControllerInfo controller, TsOptions tsOptions)
         {
             // enumarates endpoits in controller
             var endpoints = new Scanner.EndpointScannerImpl(controller);
             foreach (var endpoint in endpoints.Enumerate())
             {
-                GenerateEndpoint(sb, endpoint, typescript);
+                GenerateEndpoint(sb, endpoint, tsOptions);
             }
         }
 
-        private static void GenerateEndpoint(StringBuilder sb, EndpointInfo endpoint, bool typescript)
+        private static void GenerateEndpoint(StringBuilder sb, EndpointInfo endpoint, TsOptions tsOptions)
         {
             sb.Append($"\t\t{endpoint.NameCamelCase}: function(");
             // generate function vars
@@ -206,8 +212,8 @@ namespace Crispy
             {
                 sb.Append(separator);
                 sb.Append(parameter.JsName);
-                if (typescript){
-                    sb.Append(": ").Append(TsGenerator.GenerateTypescriptType(parameter.Info.ParameterType));
+                if (tsOptions != null){
+                    sb.Append(": ").Append(TsGenerator.GenerateTypescriptType(parameter.Info.ParameterType, tsOptions));
                 }
                 separator = ", ";
             }
@@ -290,8 +296,8 @@ namespace Crispy
 
             // done method
             sb.Append(")");
-            if (typescript){
-                sb.Append(" as ").Append(TsGenerator.GenerateTypescriptType(endpoint.ReturnType));
+            if (tsOptions != null){
+                sb.Append(" as Promise<").Append(TsGenerator.GenerateTypescriptType(endpoint.ReturnType, tsOptions)).Append(">");
             }
             sb.Append("; },\n");
         }
