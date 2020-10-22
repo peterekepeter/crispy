@@ -21,36 +21,38 @@ This is most suitable for experimentation, weekend projects, school projects and
 Crispy library project contains the JsGenerator. That's what you need. 
 You can create an API endpoint which serves the javascript to be used in your frontend application.
 
-	using Crispy;
-	using Microsoft.AspNetCore.Mvc;
-	using System.Reflection;
+```csharp
+using Crispy;
+using Microsoft.AspNetCore.Mvc;
+using System.Reflection;
 
-	namespace ApiTest.Controllers
+namespace ApiTest.Controllers
+{
+	[Route("api/[controller]")]
+	public class CrispyController : Controller
 	{
-		[Route("api/[controller]")]
-		public class CrispyController : Controller
+		[HttpGet]
+		public ContentResult GetApiDefinition()
 		{
-			[HttpGet]
-			public ContentResult GetApiDefinition()
-			{
-				// create generator instance
-				var generator = new JsGenerator()
-					// and configure it
-					.UseModuleType(ModuleLoaderType.GlobalVariable)
-					.UseVariableName("api")
-					.UsePrettyPrint();
+			// create generator instance
+			var generator = new JsGenerator()
+				// and configure it
+				.UseModuleType(ModuleLoaderType.GlobalVariable)
+				.UseVariableName("api")
+				.UsePrettyPrint();
 
-				// get assembly of web project
-				var assembly = typeof(CrispyController).GetTypeInfo().Assembly;
+			// get assembly of web project
+			var assembly = typeof(CrispyController).GetTypeInfo().Assembly;
 
-				// generate some js
-				var javascript = generator.GenerateSingleFile(assembly, "ApiTest.Controllers");
-            
-				// all done
-				return Content(javascript, "application/javascript");
-			}
+			// generate some js
+			var javascript = generator.GenerateSingleFile(assembly, "ApiTest.Controllers");
+
+			// all done
+			return Content(javascript, "application/javascript");
 		}
 	}
+}
+```
 
 
 ### Step 2: Implement API for application logic ###
@@ -61,75 +63,79 @@ Note that we care about function names.
 Put the attributes so that you have control how parameters are sent. 
 (current version only works if you use these attributes)
 
-	using System;
-	using System.Collections.Generic;
-	using Microsoft.AspNetCore.Mvc;
+```csharp
+using System;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
 
-	namespace ApiTest.Controllers
+namespace ApiTest.Controllers
+{
+	[Route("api/[controller]")]
+	public class TodoController : Controller
 	{
-		[Route("api/[controller]")]
-		public class TodoController : Controller
+		static IList<String> list = new List<String>(){ "buy milk", "do homework" };
+
+		[HttpGet]
+		public IEnumerable<string> GetAll()
 		{
-			static IList<String> list = new List<String>(){ "buy milk", "do homework" };
-     
-			[HttpGet]
-			public IEnumerable<string> GetAll()
-			{
-				return list;
-			}
-        
-			[HttpPost]
-			public void Add([FromBody]string value)
-			{
-				list.Add(value);
-			}
+			return list;
+		}
+
+		[HttpPost]
+		public void Add([FromBody]string value)
+		{
+			list.Add(value);
 		}
 	}
+}
+```
 
 ### Step 3: Use the C# methods in your JS code ###
 
 That's all, we can call the backend code with `api.todo.getAll()` and `api.todo.add(item)`, easy!
 
-	<!DOCTYPE html>
-	<html>
-	<head>
-		<meta charset="utf-8" />
-		<title>My Todo List</title>
-		<script src="api/crispy"></script>
-	</head>
-	<body>
-		<h1>My Todo List:</h1>
-		<ul id="my-todo"></ul>
-		<form id="my-todo-add">
-			<input class="item-text" type="text" name="todoItem" value=""/>
-			<input type="submit"/>
-		</form>
-		<script>
-			// render todo items from C#
-			function reloadTodo() {
-				api.todo.getAll().then(function (data) { // get all todo items from C#
-					var container = document.querySelector('ul#my-todo');
-					container.innerHTML = ''; // clear
-					for (var i = 0; i < data.length; i++) {
-						// render each item
-						var item = document.createElement('li');
-						item.textContent = data[i];
-						container.appendChild(item);
-					}
-				});
-			}
-			// event handler for creating todo 
-			document.querySelector('form#my-todo-add').addEventListener('submit', function (event) {
-				event.preventDefault();
-				var value = event.target.querySelector('input.item-text').value;
-				api.todo.add(value).then(reloadTodo); // call C# method
-				return false;
+```html
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>My Todo List</title>
+	<script src="api/crispy"></script>
+</head>
+<body>
+	<h1>My Todo List:</h1>
+	<ul id="my-todo"></ul>
+	<form id="my-todo-add">
+		<input class="item-text" type="text" name="todoItem" value=""/>
+		<input type="submit"/>
+	</form>
+	<script>
+		// render todo items from C#
+		function reloadTodo() {
+			api.todo.getAll().then(function (data) { // get all todo items from C#
+				var container = document.querySelector('ul#my-todo');
+				container.innerHTML = ''; // clear
+				for (var i = 0; i < data.length; i++) {
+					// render each item
+					var item = document.createElement('li');
+					item.textContent = data[i];
+					container.appendChild(item);
+				}
 			});
-			// initialize
-			reloadTodo();
-		</script>
-	</body>
-	</html>
+		}
+		// event handler for creating todo 
+		document.querySelector('form#my-todo-add').addEventListener('submit', function (event) {
+			event.preventDefault();
+			var value = event.target.querySelector('input.item-text').value;
+			api.todo.add(value).then(reloadTodo); // call C# method
+			return false;
+		});
+		// initialize
+		reloadTodo();
+	</script>
+</body>
+</html>
+```
 
 If you're using an API project, you might want to include the static file module so that you can serve the html from above. 
 Don't forget to add `app.UseStaticFiles();` into your `Startup.cs`.
