@@ -151,6 +151,33 @@ namespace Test.Scanner
             expected: "{ value: number, state: 0 | 1 }", 
             options: new TsOptions{ EnumNumberValues = true });
 
+        [TestMethod]
+        public void DateTime_is_converted_to_string() => Check<DateTime>(expected: "string");
+
+        [TestMethod]
+        public void DateTimeOffset_is_converted_to_string() => Check<DateTimeOffset>(expected: "string");
+
+        [TestMethod]
+        public void TimeSpan_is_converted_to_string() => Check<TimeSpan>(expected: "string");
+
+        public class SelfReferencingClass
+        {
+            public int value;
+            public SelfReferencingClass parent; 
+        }
+
+        [TestMethod]
+        public void Recursive_structures_throw_exception(){
+            Action a = () => Check<SelfReferencingClass>("{ value: number, parent: any }");
+            a.Should().Throw<CrispyException>("Recursive*");
+        }
+
+        [TestMethod]
+        public void Recursive_structures_exception_contains_error_type_path(){
+            Action a = () => Check<SelfReferencingClass>("{ value: number, parent: any }");
+            a.Should().Throw<CrispyException>("*SelfReferencingClass*->*SelfReferencingClass*");
+        }
+
         private void Check<T>(string expected, TsOptions options = null){
             Check(typeof(T), expected, options);
         }

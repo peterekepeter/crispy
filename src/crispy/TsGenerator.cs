@@ -20,10 +20,31 @@ namespace Crispy
             {
                 options = DEFAULT_OPTIONS;
             }
-            return TypeGen(type, options);
+            var typeStack = new Stack<Type>();
+            return GuardedTypeGen(type, options, typeStack);
         }
 
-        private static String TypeGen(Type type, TsOptions options)
+        private static String GuardedTypeGen(Type type, TsOptions options, Stack<Type> typeStack)
+        {
+            if (typeStack.Contains(type))
+            {
+                typeStack.Push(type);
+                throw new CrispyException("Recursive structure detected: " + GetTypePath(typeStack));
+            }
+            try
+            {
+                typeStack.Push(type);
+                var result = TypeGenImpl(type, options, typeStack);
+                typeStack.Pop();
+                return result;
+            }
+            catch (System.Exception exception)
+            {
+                throw new CrispyException("Failed to generate type: " + GetTypePath(typeStack), exception);
+            }
+        }
+
+        private static String TypeGenImpl(Type type, TsOptions options, Stack<Type> typeStack)
         {
             if (options == null)
             {
@@ -31,9 +52,13 @@ namespace Crispy
             }
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>)){
                 var redirect = type.GetProperty("Result").PropertyType;
-                return TypeGen(redirect, options);
+                return GuardedTypeGen(redirect, options, typeStack);
             }
-            if (type == typeof(String) || type == typeof(char))
+            if (type == typeof(String) || 
+                type == typeof(char) || 
+                type == typeof(DateTime) || 
+                type == typeof(DateTimeOffset) || 
+                type == typeof(TimeSpan))
             {
                 return "string";
             }
@@ -50,7 +75,7 @@ namespace Crispy
                 return "void";    
             }
             if (type.IsArray){
-                return TypeGen(type.GetElementType(), options) + "[]";
+                return GuardedTypeGen(type.GetElementType(), options, typeStack) + "[]";
             }
             if (type.IsEnum){
                 if (options.EnumNumberValues) {
@@ -64,14 +89,14 @@ namespace Crispy
             {
                 var args = iDictionary.GetGenericArguments();
                 if (args.Length == 2){
-                    return "{ [key:string]: " + TypeGen(args[1], options) + " }";
+                    return "{ [key:string]: " + GuardedTypeGen(args[1], options, typeStack) + " }";
                 }
                 return "{ [key:string]: string }";
             }
             if (typeof(IEnumerable).IsAssignableFrom(type)){
                 var generics = type.GetGenericArguments();
                 if (generics.Length == 1){
-                    return TypeGen(generics[0], options) + "[]";
+                    return GuardedTypeGen(generics[0], options, typeStack) + "[]";
                 }
                 return "any[]";
             }
@@ -117,7 +142,7 @@ namespace Crispy
                         strb.Append(separator)
                             .Append(name)
                             .Append(": ")
-                            .Append(TypeGen(property.PropertyType, options));
+                            .Append(GuardedTypeGen(property.PropertyType, options, typeStack));
                         separator = ", ";
                     }
                     else if (member.MemberType == MemberTypes.Field && options.Fields)
@@ -132,7 +157,7 @@ namespace Crispy
                             strb.Append(separator)
                                 .Append(name)
                                 .Append(": ")
-                                .Append(TypeGen(field.FieldType, options));
+                                .Append(GuardedTypeGen(field.FieldType, options, typeStack));
                             separator = ", ";
                         }
                     }
@@ -143,7 +168,10 @@ namespace Crispy
             return "any";
         }
 
-
+        private static string GetTypePath(IEnumerable<Type> types){
+            return String.Join(" -> ", types.Select(t => t.ToString()));
+        }
+    
     }
 
 }
