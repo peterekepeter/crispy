@@ -12,46 +12,46 @@ namespace Crispy
     public partial class JsGenerator
     {
         private static readonly string XhrBoilerplate = @"
-        function http (method, url, data, formatter) {
-            return new Promise(function (resolve, reject) {
-                var request = new XMLHttpRequest();
-                request.open(method, url, true);
-                request.setRequestHeader('Accept', 'application/json');
-                request.setRequestHeader('X-Request-From', 'crispy');
-                var body = null;
-                if (!(method === 'GET' || method === 'DELETE')) {
-                    if (typeof data === 'object') {
-                        request.setRequestHeader('Content-Type', 'application/json');
-                        body = JSON.stringify(data);
-                    } else {
-                        request.setRequestHeader('Content-Type', 'application/json');
-                        body = '\'' + data.replace(/'/g, '\\\'') + '\'';
-                    }
-                }
-                request.onload = function () {
-                    var data = null;
-                    if (request.status >= 200 && request.status < 400) {
-                        if (request.responseText !== null && request.responseText.length > 0 && formatter !== undefined) {
-                            data = formatter(request.responseText);
+            function http (method, url, data, formatter) {
+                return new Promise(function (resolve, reject) {
+                    var request = new XMLHttpRequest();
+                    request.open(method, url, true);
+                    request.setRequestHeader('Accept', 'application/json');
+                    request.setRequestHeader('X-Request-From', 'crispy');
+                    var body = null;
+                    if (!(method === 'GET' || method === 'DELETE')) {
+                        if (typeof data === 'object') {
+                            request.setRequestHeader('Content-Type', 'application/json');
+                            body = JSON.stringify(data);
+                        } else {
+                            request.setRequestHeader('Content-Type', 'application/json');
+                            body = '\'' + data.replace(/'/g, '\\\'') + '\'';
                         }
-                        resolve(data, request);
-                    } else {
-                        if (request.responseText !== null && request.responseText.length > 0) {
-                            data = JSON.parse(request.responseText);
-                        }
-                        reject(data, request);
                     }
-                };
-                request.onerror = function () {
-                    reject({ message: 'Failed to connect to server.' });
-                };
-                if (body === null) {
-                    request.send();
-                } else {
-                    request.send(body);
-                }
-            });
-        }
+                    request.onload = function () {
+                        var data = null;
+                        if (request.status >= 200 && request.status < 400) {
+                            if (request.responseText !== null && request.responseText.length > 0 && formatter !== undefined) {
+                                data = formatter(request.responseText);
+                            }
+                            resolve(data);
+                        } else {
+                            if (request.responseText !== null && request.responseText.length > 0) {
+                                data = JSON.parse(request.responseText);
+                            }
+                            reject(data);
+                        }
+                    };
+                    request.onerror = function () {
+                        reject({ message: 'Failed to connect to server.' });
+                    };
+                    if (body === null) {
+                        request.send();
+                    } else {
+                        request.send(body);
+                    }
+                });
+            }
 ";
 
         private static readonly string DateFormatterBoilerplate = @"
@@ -97,13 +97,13 @@ namespace Crispy
             return this; 
         }
 
-        // <summary> Emit type info for parameters and returned models </summary>
+        /// <summary> Emit type info for parameters and returned models </summary>
         public JsGenerator UseTypeScript(bool value=true){
             this.TsOptions = value ? new TsOptions() : null;
             return this;
         }
 
-        // <summary> Emit type info with the given options </summary>
+        /// <summary> Emit type info with the given options </summary>
         public JsGenerator UseTypeScript(TsOptions options){
             this.TsOptions = options;
             return this;
@@ -135,13 +135,14 @@ namespace Crispy
             var sb = new StringBuilder();
 
             GenerateHeader(sb);
-            sb.AppendLine(JavascriptHttpImplementation);
             foreach (var controller in controllerScanner.ScanForControllers())
             {
-                sb.AppendLine($"\t{this.VariableName}.{controller.NameCamelCase} = {{");
+                sb.AppendLine($"\t{controller.NameCamelCase}: {{");
                 GenerateController(sb, controller, this.TsOptions);
-                sb.AppendLine("\t};");
+                sb.AppendLine("\t},");
             }
+            GenerateApiEnd(sb);
+            GenerateBoilerplate(sb);
             GenerateFooter(sb);
             var str = sb.ToString();
             if (!prettyPrint)
@@ -149,6 +150,39 @@ namespace Crispy
                 str = uglifyRegex.Replace(str, " ");
             }
             return str;
+        }
+
+        private void GenerateBoilerplate(StringBuilder sb)
+        {
+            switch(this.ModuleType){
+                case ModuleLoaderType.Amd:
+                case ModuleLoaderType.GlobalVariable:
+                    sb.AppendLine(JavascriptHttpImplementation.Replace("    ", "\t").Replace("\n\t\t","\n"));
+                    break;
+                case ModuleLoaderType.Es6:
+                case ModuleLoaderType.CommonJs:
+                    sb.AppendLine(JavascriptHttpImplementation.Replace("    ", "\t").Replace("\n\t\t\t","\n"));
+                    break;
+            }
+        }
+
+        private void GenerateApiEnd(StringBuilder sb)
+        {
+            switch (this.ModuleType)
+            {
+                case ModuleLoaderType.Amd:
+                    sb.AppendLine("\t};");
+                    break;
+                case ModuleLoaderType.CommonJs:
+                    sb.AppendLine("\t};");
+                    break;
+                case ModuleLoaderType.GlobalVariable:
+                    sb.AppendLine("\t};");
+                    break;
+                case ModuleLoaderType.Es6:
+                    sb.AppendLine("};");
+                    break;
+            }
         }
 
         private void GenerateFooter(StringBuilder sb)
@@ -165,7 +199,7 @@ namespace Crispy
                     sb.AppendLine("})();");
                     break;
                 case ModuleLoaderType.Es6:
-                    sb.AppendLine("\texport default api;");
+                    sb.AppendLine("export default api;");
                     break;
             }
         }
@@ -175,20 +209,19 @@ namespace Crispy
             switch (ModuleType)
             {
                 case ModuleLoaderType.Es6:
-                    sb.AppendLine("\tconst " + this.VariableName + " = {};");
+                    sb.AppendLine("export const " + this.VariableName + " = {");
                     break;
                 case ModuleLoaderType.Amd:
                     sb.AppendLine("define(function(){");
-                    sb.AppendLine("\tvar " + this.VariableName + " = {};");
+                    sb.AppendLine("\tvar " + this.VariableName + " = {");
                     break;
                 case ModuleLoaderType.CommonJs:
                     sb.AppendLine("module.exports = (function(){");
-                    sb.AppendLine("\tvar " + this.VariableName + " = {};");
+                    sb.AppendLine("\tvar " + this.VariableName + " = {");
                     break;
                 case ModuleLoaderType.GlobalVariable:
                     sb.AppendLine("(function(){");
-                    sb.AppendLine("\tif (window." + this.VariableName + " == null) { window."+this.VariableName+" = {}; };");
-                    sb.AppendLine("\tvar " + this.VariableName + " = window." + this.VariableName + ";");
+                    sb.AppendLine("\twindow."+this.VariableName+" = {");
                     break;
             }
         }

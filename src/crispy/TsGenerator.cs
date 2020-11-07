@@ -58,6 +58,9 @@ namespace Crispy
                 var redirect = type.GetProperty("Result").PropertyType;
                 return GuardedTypeGen(redirect, options, typeStack);
             }
+            if (type == typeof(Task)){
+                return "void";
+            }
             if (type == typeof(String) || 
                 type == typeof(char) || 
                 type == typeof(DateTime) || 
@@ -166,6 +169,9 @@ namespace Crispy
                         }
                     }
                 }
+                if (strb.Length == 0){
+                    return "any"; // had no valid members
+                }
                 strb.Append(" }");
                 return strb.ToString();
             }
@@ -173,7 +179,7 @@ namespace Crispy
         }
 
         private static string GetTypePath(IEnumerable<Type> types){
-            return String.Join(" -> ", types.Select(t => t.Name));
+            return String.Join(" -> ", types.Select(t => t.Name).Reverse());
         }
     
     }

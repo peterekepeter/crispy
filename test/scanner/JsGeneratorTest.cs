@@ -27,7 +27,10 @@ namespace Test.Scanner
         public void SomeCodeIsGenerated(string js) => js.Should().NotBeNullOrWhiteSpace();
 
         [TestMethod] [JsImplementation.All]
-        public void ControllerNameIsInJs(string js) => js.Should().Contain("api.someValue");
+        public void ControllerNameIsInJs(string js) => js.Should().Contain("someValue");
+
+        [TestMethod] [JsImplementation.All]
+        public void Controller_endpoint_syntax(string js) => js.Should().Contain("api = { someValue: { getAllValues: ");
 
         [TestMethod] [JsImplementation.All]
         public void ValueNameIsInJs(string js) => js.Should().Contain("getAllValues");
@@ -43,6 +46,10 @@ namespace Test.Scanner
 
         [TestMethod] [JsImplementation.Custom]
         public void HasCustomCode(string js) => js.Should().Contain("console.info(");
+
+        [TestMethod] [JsImplementation.All]
+        public void Resolve_reject_called_with_at_most_1_param(string js) 
+            => js.Should().NotMatchRegex("(resolve|reject)\\([a-z]+,\\s*[a-z]+\\)");
 
     }
 

@@ -3,6 +3,7 @@ using FluentAssertions;
 using System.Collections.Generic;
 using Crispy;
 using System;
+using System.Threading.Tasks;
 
 namespace Test.Scanner
 {
@@ -169,14 +170,35 @@ namespace Test.Scanner
         [TestMethod]
         public void Recursive_structures_throw_exception(){
             Action a = () => Check<SelfReferencingClass>("{ value: number, parent: any }");
-            a.Should().Throw<CrispyException>("Recursive*");
+            a.Should().Throw<CrispyException>().WithMessage("Recursive*");
         }
 
         [TestMethod]
         public void Recursive_structures_exception_contains_error_type_path(){
             Action a = () => Check<SelfReferencingClass>("{ value: number, parent: any }");
-            a.Should().Throw<CrispyException>("*SelfReferencingClass*->*SelfReferencingClass*");
+            a.Should().Throw<CrispyException>().WithMessage("*SelfReferencingClass*->*SelfReferencingClass*");
         }
+
+        public class WrapperClass
+        {
+            public int value;
+            public SelfReferencingClass parent; 
+        }
+
+        [TestMethod]
+        public void Recursive_structures_exception_contains_error_type_path_in_correct_order(){
+            Action a = () => Check<WrapperClass>("*");
+            a.Should().Throw<CrispyException>().WithMessage("*WrapperClass*->*SelfReferencingClass*");
+        }
+
+        [TestMethod] public void String_task_is_string() 
+            => Check<Task<String>>(expected: "string");
+
+        [TestMethod] public void Task_is_void() 
+            => Check<Task>(expected: "void");
+
+        [TestMethod] public void Object_is_any() 
+            => Check<object>(expected: "any");
 
         private void Check<T>(string expected, TsOptions options = null){
             Check(typeof(T), expected, options);
