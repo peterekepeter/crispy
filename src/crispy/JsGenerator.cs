@@ -199,7 +199,16 @@ namespace Crispy
             var endpoints = new Scanner.EndpointScannerImpl(controller);
             foreach (var endpoint in endpoints.Enumerate())
             {
-                GenerateEndpoint(sb, endpoint, tsOptions);
+                try
+                {
+                    GenerateEndpoint(sb, endpoint, tsOptions);
+                }
+                catch (Exception exception)
+                {
+                    throw new CrispyException(
+                        $"Generator error at '{endpoint.Controller.Type.Name}.{endpoint.Name}'", 
+                        exception);
+                }
             }
         }
 
@@ -253,7 +262,7 @@ namespace Crispy
                     }
                     else
                     {
-                        throw new CrispyException($"Invalid controller method {endpoint.Controller.Type.Name}.{endpoint.Name}, it can only have 1 body param but there are at least 2.");
+                        throw new CrispyException($"It can only have 1 body param but there are at least 2.");
                     }
                 }
             }

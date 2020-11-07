@@ -29,7 +29,7 @@ namespace Crispy
             if (typeStack.Contains(type))
             {
                 typeStack.Push(type);
-                throw new CrispyException("Recursive structure detected: " + GetTypePath(typeStack));
+                throw new CrispyException("Recursive structure not supported: " + GetTypePath(typeStack));
             }
             try
             {
@@ -38,9 +38,13 @@ namespace Crispy
                 typeStack.Pop();
                 return result;
             }
+            catch (CrispyException)
+            {
+                throw;
+            }
             catch (System.Exception exception)
             {
-                throw new CrispyException("Failed to generate type: " + GetTypePath(typeStack), exception);
+                throw new CrispyException("Failed to generate typescript: " + GetTypePath(typeStack), exception);
             }
         }
 
@@ -169,7 +173,7 @@ namespace Crispy
         }
 
         private static string GetTypePath(IEnumerable<Type> types){
-            return String.Join(" -> ", types.Select(t => t.ToString()));
+            return String.Join(" -> ", types.Select(t => t.Name));
         }
     
     }

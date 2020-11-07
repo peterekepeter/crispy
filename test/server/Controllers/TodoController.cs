@@ -32,11 +32,17 @@ namespace ApiTest.Controllers
         {
             public State CurrentState;
         }
+        public class MoreTypes
+        {
+            public DateTime DateTime;
+            public DateTimeOffset DateTimeOffset;
+            public TimeSpan TimeSpan;
+        }
 
         [HttpGet("xyz")]
-        public async Task<HighLowTemps> GetThing()
+        public async Task<MoreTypes> GetThing()
         {
-            return new HighLowTemps{ CurrentState = State.Closed };
+            return new MoreTypes{ DateTime = DateTime.UtcNow, DateTimeOffset = DateTimeOffset.UtcNow, TimeSpan = TimeSpan.FromHours(4) };
         }
     }
 }

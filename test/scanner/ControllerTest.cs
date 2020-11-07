@@ -28,8 +28,7 @@ namespace Test.Scanner
                     "Test.Scanner.BadPostController");
         
         [TestMethod]
-        public void BadPostThrows() => Generating.Should().Throw<CrispyException>()
-            .WithMessage("Invalid controller method*");
+        public void BadPostThrows() => Generating.Should().Throw<CrispyException>();
 
         [TestMethod]
         public void MessageContainsControllerAndMethodName() => Generating.Should()
@@ -123,5 +122,28 @@ namespace Test.Scanner
 
         [TestMethod]
         public void ShouldHaveOneMedthod() => ScannedController.Count().Should().Be(1);
+    }
+
+    [TestClass] public class RecursiveStructureControllerWithTypescriptTest {
+        public Action Generating = () => new JsGenerator()
+                .UseModuleType(ModuleLoaderType.GlobalVariable)
+                .UseTypeScript(true)
+                .GenerateSingleFile(Assembly.GetExecutingAssembly(), 
+                    "Test.Scanner.Mock.RecursiveStructureController");
+        
+        [TestMethod]
+        public void MethodWithRecursiveStructureThrows() => Generating.Should().Throw<CrispyException>();
+
+        [TestMethod]
+        public void InnerExceptionContainsTheTypeWhichCausedTheError() => Generating.Should().Throw<CrispyException>()
+            .WithInnerException<CrispyException>().WithMessage("*DataResult*");
+
+        [TestMethod]
+        public void InnerInnerExceptionContainsTheTypeWhichCausedTheError() => Generating.Should().Throw<CrispyException>()
+            .WithInnerException<CrispyException>().WithMessage("Recursive structure not supported*");
+
+        [TestMethod]
+        public void MessageContainsControllerAndMethodName() => Generating.Should()
+            .Throw<CrispyException>().WithMessage("*RecursiveStructureController*GetValues*");
     }
 }
