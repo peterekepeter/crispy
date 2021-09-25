@@ -107,6 +107,11 @@ namespace Crispy
                 }
                 return "any[]";
             }
+            var nullableUndelyingType = Nullable.GetUnderlyingType(type);
+            if (nullableUndelyingType != null){
+                // is nullable<T>
+                return GuardedTypeGen(nullableUndelyingType, options, typeStack) + " | null";
+            }
             var bindingFlags = BindingFlags.Instance;
             if (options.Public){
                 bindingFlags |= BindingFlags.Public;
@@ -146,10 +151,8 @@ namespace Crispy
                             continue; 
                         }
                         var name = options.LowercaseFirstLetter ? property.Name.LowerFirstLetter() : property.Name;
-                        strb.Append(separator)
-                            .Append(name)
-                            .Append(": ")
-                            .Append(GuardedTypeGen(property.PropertyType, options, typeStack));
+                        var typeString = GuardedTypeGen(property.PropertyType, options, typeStack);
+                        AppendMember(strb, name, typeString, separator);
                         separator = ", ";
                     }
                     else if (member.MemberType == MemberTypes.Field && options.Fields)
@@ -161,10 +164,8 @@ namespace Crispy
                         if (options.Readable || !field.IsInitOnly && options.Writeable)
                         {
                             var name = options.LowercaseFirstLetter ? field.Name.LowerFirstLetter() : field.Name;
-                            strb.Append(separator)
-                                .Append(name)
-                                .Append(": ")
-                                .Append(GuardedTypeGen(field.FieldType, options, typeStack));
+                            var typeString = GuardedTypeGen(field.FieldType, options, typeStack);
+                            AppendMember(strb, name, typeString, separator);
                             separator = ", ";
                         }
                     }
@@ -176,6 +177,21 @@ namespace Crispy
                 return strb.ToString();
             }
             return "any";
+        }
+
+        private static void AppendMember(StringBuilder strb, string name, string typeString, string separator)
+        {
+            if (typeString.EndsWith(" | null")){
+                strb.Append(separator)
+                    .Append(name)
+                    .Append("?: ")
+                    .Append(typeString.Substring(0, typeString.Length - 7));
+            } else {
+                strb.Append(separator)
+                    .Append(name)
+                    .Append(": ")
+                    .Append(typeString);
+            }
         }
 
         private static string GetTypePath(IEnumerable<Type> types){
