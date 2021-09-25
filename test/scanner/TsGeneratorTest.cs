@@ -200,6 +200,14 @@ namespace Test.Scanner
         [TestMethod] public void Object_is_any() 
             => Check<object>(expected: "any");
 
+        public class ClassWithOptionalMember
+        {
+            public int? id;
+        }
+
+        [TestMethod] public void Optional_member_converted_correctly() 
+            => Check<ClassWithOptionalMember>(expected: "{ id?: number }");
+
         private void Check<T>(string expected, TsOptions options = null){
             Check(typeof(T), expected, options);
         }
